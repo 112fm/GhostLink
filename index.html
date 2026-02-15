@@ -8,7 +8,7 @@
     />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
     <link
@@ -25,7 +25,7 @@
               "muted-gray": "#555555",
             },
             fontFamily: {
-              sans: ["Inter", "sans-serif"],
+              sans: ["Onest", "sans-serif"],
             },
             borderRadius: {
               "2xl": "1rem",
@@ -59,13 +59,20 @@
     </style>
   </head>
   <body class="flex flex-col p-6">
-    <header class="pt-2 mb-8">
+    <header class="pt-2 mb-6 flex items-center gap-3">
+      <img
+        src="ghost_ava.png"
+        alt="GhostLink"
+        class="w-10 h-10 rounded-full object-cover"
+      />
       <h1 class="text-3xl font-black tracking-tight text-white uppercase">
         GHOSTLINK
       </h1>
     </header>
 
-    <div class="flex justify-between items-end mb-10">
+    <div class="flex-grow"></div>
+
+    <div class="flex justify-between items-end mb-8">
       <div class="flex flex-col">
         <span class="text-white text-4xl font-bold">51₽</span>
         <span class="text-muted-gray text-sm font-medium">Баланс</span>
@@ -107,8 +114,6 @@
         <span class="text-primary text-sm font-bold">Поддержка</span>
       </button>
     </div>
-
-    <div class="flex-grow"></div>
 
     <footer class="pb-2 text-center">
       <span class="text-muted-gray text-sm font-medium tracking-wide"
