@@ -6,6 +6,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
       name="viewport"
     />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800;900&display=swap"
@@ -23,6 +24,8 @@
               primary: "#B8FF00",
               "bg-dark": "#1E1E1E",
               "muted-gray": "#555555",
+              "card-dark": "#111111",
+              "accent-red": "#FF3B30",
             },
             fontFamily: {
               sans: ["Onest", "sans-serif"],
@@ -41,7 +44,6 @@
         -webkit-tap-highlight-color: transparent;
         user-select: none;
         overflow: hidden;
-        height: 100vh;
         height: 100dvh;
       }
       .material-symbols-outlined {
@@ -51,10 +53,11 @@
         transform: scale(0.97);
         transition: transform 0.1s ease;
       }
-    </style>
-    <style>
-      body {
-        min-height: max(884px, 100dvh);
+      .screen {
+        display: none;
+      }
+      .screen.active {
+        display: block;
       }
     </style>
   </head>
@@ -65,60 +68,372 @@
         alt="GhostLink"
         class="w-10 h-10 rounded-full object-cover"
       />
-      <h1 class="text-3xl font-black tracking-tight text-white uppercase">
-        GHOSTLINK
-      </h1>
+      <div class="flex-1">
+        <h1 class="text-3xl font-black tracking-tight text-white uppercase">
+          GHOSTLINK
+        </h1>
+      </div>
+      <button id="backBtn" class="hidden text-white/80">Назад</button>
     </header>
 
-    <div class="flex-grow"></div>
+    <main class="flex-1 overflow-y-auto">
+      <section id="screen-home" class="screen active">
+        <div class="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 mb-8 items-start">
+          <span class="text-white text-[28px] font-bold leading-none" id="balanceValue">0₽</span>
+          <span class="text-white text-lg font-bold leading-none text-right" id="expiryValue">нет подписки</span>
+          <div class="min-h-[16px] flex items-end">
+            <span class="text-muted-gray text-[20px] font-black uppercase tracking-wider">Баланс</span>
+          </div>
+          <div class="min-h-[16px] flex items-end justify-end">
+            <span id="subStatus" class="text-[10px] font-black uppercase tracking-wider text-accent-red"
+              >ПОДПИСКА НЕАКТИВНА</span
+            >
+          </div>
+        </div>
 
-    <div class="flex justify-between items-end mb-8">
-      <div class="flex flex-col">
-        <span class="text-white text-4xl font-bold">51₽</span>
-        <span class="text-muted-gray text-sm font-medium">Баланс</span>
-      </div>
-      <div class="flex flex-col text-right">
-        <span class="text-white text-lg font-bold">до 16 марта 2026</span>
-        <span class="text-primary text-[10px] font-black uppercase tracking-wider"
-          >ПОДПИСКА АКТИВНА</span
-        >
-      </div>
-    </div>
+        <div class="flex flex-col gap-4">
+          <button id="buyBtn"
+            class="ios-active w-full bg-primary h-[60px] rounded-2xl flex items-center justify-between px-6"
+          >
+            <span class="text-black font-bold text-lg">Купить подписку</span>
+            <span class="material-symbols-outlined text-black">credit_card</span>
+          </button>
+          <button id="setupBtn"
+            class="ios-active w-full border border-primary h-[60px] rounded-2xl flex items-center justify-between px-6"
+          >
+            <span class="text-primary font-bold text-lg">Установка и настройка</span>
+            <span class="material-symbols-outlined text-primary">download</span>
+          </button>
+        </div>
 
-    <div class="flex flex-col gap-4">
-      <button
-        class="ios-active w-full bg-primary h-[60px] rounded-2xl flex items-center justify-between px-6 transition-transform"
-      >
-        <span class="text-black font-bold text-lg">Купить подписку</span>
-        <span class="material-symbols-outlined text-black">credit_card</span>
-      </button>
-      <button
-        class="ios-active w-full border border-primary h-[60px] rounded-2xl flex items-center justify-between px-6 transition-transform"
-      >
-        <span class="text-primary font-bold text-lg">Установка и настройка</span>
-        <span class="material-symbols-outlined text-primary">download</span>
-      </button>
-    </div>
+        <div class="grid grid-cols-2 gap-4 mt-4">
+          <button id="profileBtn"
+            class="ios-active border border-primary h-[80px] rounded-2xl flex flex-col items-center justify-center gap-1"
+          >
+            <span class="material-symbols-outlined text-primary">person</span>
+            <span class="text-primary text-sm font-bold">Профиль</span>
+          </button>
+          <button id="supportBtn"
+            class="ios-active border border-primary h-[80px] rounded-2xl flex flex-col items-center justify-center gap-1"
+          >
+            <span class="material-symbols-outlined text-primary">headset_mic</span>
+            <span class="text-primary text-sm font-bold">Поддержка</span>
+          </button>
+        </div>
+      </section>
 
-    <div class="grid grid-cols-2 gap-4 mt-4">
-      <button
-        class="ios-active border border-primary h-[80px] rounded-2xl flex flex-col items-center justify-center gap-1 transition-transform"
-      >
-        <span class="material-symbols-outlined text-primary">person</span>
-        <span class="text-primary text-sm font-bold">Профиль</span>
-      </button>
-      <button
-        class="ios-active border border-primary h-[80px] rounded-2xl flex flex-col items-center justify-center gap-1 transition-transform"
-      >
-        <span class="material-symbols-outlined text-primary">headset_mic</span>
-        <span class="text-primary text-sm font-bold">Поддержка</span>
-      </button>
-    </div>
+      <section id="screen-tariffs" class="screen">
+        <h2 class="text-2xl font-bold mb-4">Тарифы</h2>
+        <div class="grid grid-cols-1 gap-4">
+          <div class="border border-primary rounded-2xl p-4">
+            <div class="text-white text-lg font-bold">Single</div>
+            <div class="text-muted-gray text-sm">1 устройство</div>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <button class="tariff-btn ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl" data-tariff="single" data-months="1">1 мес — 150 ₽</button>
+              <button class="tariff-btn ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl" data-tariff="single" data-months="3">3 мес — 400 ₽</button>
+            </div>
+          </div>
+          <div class="border border-primary rounded-2xl p-4">
+            <div class="text-white text-lg font-bold">Trio</div>
+            <div class="text-muted-gray text-sm">3 устройства</div>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <button class="tariff-btn ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl" data-tariff="trio" data-months="1">1 мес — 250 ₽</button>
+              <button class="tariff-btn ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl" data-tariff="trio" data-months="3">3 мес — 650 ₽</button>
+            </div>
+          </div>
+          <div class="border border-primary rounded-2xl p-4">
+            <div class="text-white text-lg font-bold">Family</div>
+            <div class="text-muted-gray text-sm">7 устройств</div>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <button class="tariff-btn ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl" data-tariff="family" data-months="1">1 мес — 450 ₽</button>
+              <button class="tariff-btn ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl" data-tariff="family" data-months="3">3 мес — 1200 ₽</button>
+            </div>
+          </div>
+        </div>
+        <div class="text-muted-gray text-sm mt-4">Оплата будет подключена позже.</div>
+      </section>
 
-    <footer class="pb-2 text-center">
-      <span class="text-muted-gray text-sm font-medium tracking-wide"
-        >@ghostlink_bot</span
-      >
-    </footer>
+      <section id="screen-setup" class="screen">
+        <h2 class="text-2xl font-bold mb-4">Установка и настройка</h2>
+        <div class="flex flex-col gap-3">
+          <button id="setupThisDevice" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">
+            Настроить на этом устройстве
+          </button>
+          <button id="setupOtherDevice" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">
+            Настроить на другом устройстве
+          </button>
+        </div>
+      </section>
+
+      <section id="screen-device-select" class="screen">
+        <h2 class="text-2xl font-bold mb-4">Выберите устройство</h2>
+        <div class="flex flex-col gap-3">
+          <button class="device-btn ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl" data-os="android">Android</button>
+          <button class="device-btn ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl" data-os="ios">iOS</button>
+          <button class="device-btn ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl" data-os="windows">Windows</button>
+          <button class="device-btn ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl" data-os="mac">MacOS</button>
+        </div>
+      </section>
+
+      <section id="screen-app" class="screen">
+        <h2 class="text-2xl font-bold mb-2">Приложение</h2>
+        <div class="text-muted-gray mb-4">Скачай V2rayTun для твоего устройства.</div>
+        <a id="appLink" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl inline-block" href="#" target="_blank">Скачать V2rayTun</a>
+        <div class="mt-6">
+          <button id="toKeyBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Далее</button>
+        </div>
+      </section>
+
+      <section id="screen-key" class="screen">
+        <h2 class="text-2xl font-bold mb-2">Подписка</h2>
+        <div class="text-muted-gray mb-3">Скопируй ключ и добавь в приложение.</div>
+        <div class="bg-card-dark rounded-2xl p-4 break-words" id="keyValue">ключ загрузится...</div>
+        <div class="flex gap-3 mt-4">
+          <button id="copyKeyBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">Скопировать</button>
+          <button id="doneKeyBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Далее</button>
+        </div>
+      </section>
+
+      <section id="screen-done" class="screen">
+        <div class="text-center mt-10">
+          <div class="text-2xl font-bold mb-2">Готово!</div>
+          <div class="text-muted-gray mb-6">Теперь можно включить VPN в приложении V2rayTun.</div>
+          <button id="finishBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">Завершить настройку</button>
+        </div>
+      </section>
+
+      <section id="screen-profile" class="screen">
+        <div class="mb-4">
+          <div class="text-2xl font-bold" id="profileName">Пользователь</div>
+          <div class="text-muted-gray" id="profileId">ID: 0</div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <button id="profilePayBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Оплата</button>
+          <button id="profileRefBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Реферальная программа</button>
+          <button id="profileSupportBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Связаться с поддержкой</button>
+          <button id="profileAgreementBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Пользовательское соглашение</button>
+          <button id="profileDevicesBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">Управление устройствами</button>
+        </div>
+      </section>
+
+      <section id="screen-support" class="screen">
+        <h2 class="text-2xl font-bold mb-2">Поддержка</h2>
+        <div class="text-muted-gray mb-4">Откроется чат с ботом.</div>
+        <a id="supportLink" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl inline-block" href="#" target="_blank">Открыть чат</a>
+      </section>
+
+      <section id="screen-agreement" class="screen">
+        <h2 class="text-2xl font-bold mb-2" id="agreementTitle">Пользовательское соглашение</h2>
+        <div class="text-muted-gray text-sm" id="agreementText">Текст загружается...</div>
+      </section>
+
+      <section id="screen-devices" class="screen">
+        <h2 class="text-2xl font-bold mb-2">Устройства</h2>
+        <div class="text-muted-gray mb-3">Лимит устройств: <span id="deviceLimit">0</span></div>
+        <div class="flex flex-col gap-3">
+          <button id="resetDeviceBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Сбросить ключ</button>
+          <div class="text-muted-gray text-sm">Сброс ключа отключит все устройства. Затем подключишь нужные заново.</div>
+        </div>
+      </section>
+
+      <section id="screen-ref" class="screen">
+        <h2 class="text-2xl font-bold mb-2">Реферальная программа</h2>
+        <div class="text-muted-gray mb-3">Пригласи друга и получи бонусы.</div>
+        <div class="bg-card-dark rounded-2xl p-4 break-words" id="refLink">ссылка...</div>
+        <button id="copyRefBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl mt-4">Скопировать ссылку</button>
+        <div class="text-muted-gray text-sm mt-3">
+          Новичок: +3 дня к триалу или -50 ₽ на первый месяц. Пригласивший: +7 дней или 50 ₽ на баланс.
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const screens = Array.from(document.querySelectorAll('.screen'));
+      const backBtn = document.getElementById('backBtn');
+      const stack = ['screen-home'];
+
+      function showScreen(id) {
+        screens.forEach(s => s.classList.remove('active'));
+        const el = document.getElementById(id);
+        if (el) el.classList.add('active');
+        backBtn.classList.toggle('hidden', stack.length <= 1);
+      }
+
+      function pushScreen(id) {
+        stack.push(id);
+        showScreen(id);
+      }
+
+      function popScreen() {
+        if (stack.length > 1) stack.pop();
+        showScreen(stack[stack.length - 1]);
+      }
+
+      backBtn.addEventListener('click', popScreen);
+
+      const tg = window.Telegram ? Telegram.WebApp : null;
+      if (tg) tg.ready();
+
+      const params = new URLSearchParams(window.location.search);
+      const API_BASE = params.get('api') || '';
+      const INIT_DATA = tg ? tg.initData : '';
+      const OS = tg && tg.platform ? tg.platform : '';
+
+      const LINKS = {
+        ios: 'https://apps.apple.com/us/app/v2raytun/id6474143415',
+        android: 'https://play.google.com/store/apps/details?id=com.v2raytun.android',
+        windows: 'https://github.com/mdf45/v2raytun/releases/download/v3.7.10/v2RayTun_Setup.exe',
+        mac: 'https://apps.apple.com/us/app/v2raytun/id6474143415'
+      };
+
+      function apiFetch(path, options = {}) {
+        if (!API_BASE) return Promise.reject(new Error('no_api'));
+        return fetch(API_BASE + path, {
+          ...options,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Telegram-InitData': INIT_DATA,
+            ...(options.headers || {})
+          }
+        }).then(r => r.json());
+      }
+
+      function setSubStatus(active) {
+        const el = document.getElementById('subStatus');
+        if (active) {
+          el.textContent = 'ПОДПИСКА АКТИВНА';
+          el.classList.remove('text-accent-red');
+          el.classList.add('text-primary');
+        } else {
+          el.textContent = 'ПОДПИСКА НЕАКТИВНА';
+          el.classList.remove('text-primary');
+          el.classList.add('text-accent-red');
+        }
+      }
+
+      function loadUser() {
+        if (!API_BASE || !INIT_DATA) return;
+        apiFetch('/api/user')
+          .then(data => {
+            document.getElementById('balanceValue').textContent = (data.balance || 0) + '₽';
+            document.getElementById('expiryValue').textContent = data.subscription.expiry || 'нет подписки';
+            setSubStatus(data.subscription.active);
+            document.getElementById('profileName').textContent = data.user.name || 'Пользователь';
+            document.getElementById('profileId').textContent = 'ID: ' + data.user.id;
+            document.getElementById('deviceLimit').textContent = data.device_limit || 3;
+            document.getElementById('refLink').textContent = data.referral_link || 'нет ссылки';
+            const supportLink = document.getElementById('supportLink');
+            supportLink.href = data.support_link || '#';
+          })
+          .catch(() => {});
+      }
+
+      function loadAgreement() {
+        apiFetch('/api/agreement').then(data => {
+          document.getElementById('agreementTitle').textContent = data.title;
+          document.getElementById('agreementText').textContent = data.text;
+        }).catch(() => {});
+      }
+
+      function loadKey() {
+        apiFetch('/api/key', { method: 'POST' }).then(data => {
+          document.getElementById('keyValue').textContent = data.key || 'нет ключа';
+        }).catch(() => {
+          document.getElementById('keyValue').textContent = 'Не удалось получить ключ';
+        });
+      }
+
+      function subscribe(tariffId, months) {
+        return apiFetch('/api/subscribe', {
+          method: 'POST',
+          body: JSON.stringify({ tariff_id: tariffId, months: months })
+        }).then(data => {
+          if (data && data.ok) {
+            loadUser();
+            return data;
+          }
+          throw new Error('subscribe_failed');
+        });
+      }
+
+      document.getElementById('buyBtn').addEventListener('click', () => pushScreen('screen-tariffs'));
+      document.getElementById('setupBtn').addEventListener('click', () => pushScreen('screen-setup'));
+      document.getElementById('profileBtn').addEventListener('click', () => pushScreen('screen-profile'));
+      document.getElementById('supportBtn').addEventListener('click', () => pushScreen('screen-support'));
+
+      document.getElementById('profilePayBtn').addEventListener('click', () => pushScreen('screen-tariffs'));
+      document.getElementById('profileRefBtn').addEventListener('click', () => pushScreen('screen-ref'));
+      document.getElementById('profileSupportBtn').addEventListener('click', () => pushScreen('screen-support'));
+      document.getElementById('profileAgreementBtn').addEventListener('click', () => { pushScreen('screen-agreement'); loadAgreement(); });
+      document.getElementById('profileDevicesBtn').addEventListener('click', () => pushScreen('screen-devices'));
+
+      document.getElementById('setupThisDevice').addEventListener('click', () => {
+        const os = OS === 'ios' ? 'ios' : OS === 'android' ? 'android' : OS === 'macos' ? 'mac' : 'windows';
+        const link = LINKS[os] || LINKS.android;
+        document.getElementById('appLink').href = link;
+        pushScreen('screen-app');
+      });
+
+      document.getElementById('setupOtherDevice').addEventListener('click', () => pushScreen('screen-device-select'));
+
+      document.querySelectorAll('.device-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const os = btn.getAttribute('data-os');
+          document.getElementById('appLink').href = LINKS[os] || LINKS.android;
+          pushScreen('screen-app');
+        });
+      });
+
+      document.getElementById('toKeyBtn').addEventListener('click', () => {
+        pushScreen('screen-key');
+        loadKey();
+      });
+
+      document.getElementById('copyKeyBtn').addEventListener('click', async () => {
+        const text = document.getElementById('keyValue').textContent;
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch (e) {}
+      });
+
+      document.getElementById('doneKeyBtn').addEventListener('click', () => pushScreen('screen-done'));
+      document.getElementById('finishBtn').addEventListener('click', () => { stack.length = 1; showScreen('screen-home'); });
+
+      document.getElementById('copyRefBtn').addEventListener('click', async () => {
+        const text = document.getElementById('refLink').textContent;
+        try { await navigator.clipboard.writeText(text); } catch (e) {}
+      });
+
+      document.getElementById('resetDeviceBtn').addEventListener('click', () => {
+        apiFetch('/api/device/reset', { method: 'POST' })
+          .then(data => {
+            document.getElementById('keyValue').textContent = data.key || 'ключ обновлен';
+          })
+          .catch(() => {});
+      });
+
+      document.querySelectorAll('.tariff-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const tariff = btn.getAttribute('data-tariff');
+          const months = parseInt(btn.getAttribute('data-months'), 10);
+          btn.disabled = true;
+          const oldText = btn.textContent;
+          btn.textContent = 'Обработка...';
+          try {
+            await subscribe(tariff, months);
+            btn.textContent = 'Готово';
+          } catch (e) {
+            btn.textContent = 'Ошибка';
+          } finally {
+            setTimeout(() => {
+              btn.disabled = false;
+              btn.textContent = oldText;
+            }, 1500);
+          }
+        });
+      });
+
+      loadUser();
+    </script>
   </body>
 </html>
