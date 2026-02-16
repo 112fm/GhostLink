@@ -63,7 +63,7 @@
   </head>
   <body class="flex flex-col p-6">
     <section id="screen-locked" class="screen">
-      <div class="mt-24 text-center">
+      <div class="h-full flex flex-col items-center justify-center text-center">
         <div class="text-2xl font-bold mb-2">Доступ закрыт</div>
         <div class="text-muted-gray">Вход только по приглашению.</div>
       </div>
@@ -273,7 +273,7 @@
       let accessClosed = false;
 
       function showScreen(id) {
-        if (accessClosed) id = 'screen-locked';
+        if (accessClosed && USER_ID !== ADMIN_ID) id = 'screen-locked';
         screens.forEach(s => s.classList.remove('active'));
         const el = document.getElementById(id);
         if (el) el.classList.add('active');
@@ -281,7 +281,7 @@
       }
 
       function pushScreen(id) {
-        if (accessClosed) return showScreen('screen-locked');
+        if (accessClosed && USER_ID !== ADMIN_ID) return showScreen('screen-locked');
         stack.push(id);
         showScreen(id);
       }
