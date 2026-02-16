@@ -97,6 +97,8 @@ const screens = Array.from(document.querySelectorAll('.screen'));
             document.getElementById('profileName').textContent = data.user.name || 'Пользователь';
             document.getElementById('profileId').textContent = 'ID: ' + data.user.id;
             document.getElementById('deviceLimit').textContent = data.device_limit || 3;
+            const dc = document.getElementById('deviceCount');
+            if (dc) dc.textContent = '—';
             document.getElementById('refLink').textContent = data.referral_link || 'нет ссылки';
             document.getElementById('discountValue').textContent = data.discount_text || ((data.discount || 0) + ' ₽');
             supportUrl = data.support_link || 'https://t.me/ghostlink112_bot';
@@ -135,7 +137,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       document.getElementById('profileRefBtn').addEventListener('click', () => { pushScreen('screen-ref'); loadReferrals(); });
       document.getElementById('profileSupportBtn').addEventListener('click', () => pushScreen('screen-support'));
       document.getElementById('profileRulesBtn').addEventListener('click', () => pushScreen('screen-rules'));
-      document.getElementById('profileDevicesBtn').addEventListener('click', () => pushScreen('screen-devices'));
+      document.getElementById('profileDevicesBtn').addEventListener('click', () => { pushScreen('screen-devices'); loadDevices(); });
 
       document.getElementById('copyRefBtn').addEventListener('click', async () => {
         const text = document.getElementById('refLink').textContent;
@@ -146,7 +148,14 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         if (!supportUrl) return;
         if (tg && tg.openTelegramLink) {
           e.preventDefault();
-          tg.openTelegramLink(supportUrl);
+          try {
+            tg.openTelegramLink(supportUrl);
+          } catch (err) {
+            window.location.href = supportUrl;
+          }
+        } else {
+          e.preventDefault();
+          window.open(supportUrl, '_blank');
         }
       });
 
@@ -154,12 +163,23 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         apiFetch('/api/referrals')
           .then(data => {
             const box = document.getElementById('refList');
+            const total = Number(data.total || 0);
+            const paid = Number(data.paid || 0);
+            const pending = Number(data.pending || 0);
+            const summary = document.createElement('div');
+            summary.className = 'text-sm text-muted-gray mb-3';
+            summary.textContent = `Приглашено: ${total} · Оплатили: ${paid} · Ожидают: ${pending}`;
             if (!data.items || data.items.length === 0) {
-              box.textContent = 'Пока никого нет.';
-              box.className = 'text-muted-gray text-sm';
+              box.innerHTML = '';
+              box.appendChild(summary);
+              const empty = document.createElement('div');
+              empty.className = 'text-muted-gray text-sm';
+              empty.textContent = 'Пока никого нет.';
+              box.appendChild(empty);
               return;
             }
             box.innerHTML = '';
+            box.appendChild(summary);
             data.items.forEach(item => {
               const row = document.createElement('div');
               row.className = 'flex items-center justify-between py-2 border-b border-white/10 text-sm';
@@ -171,9 +191,87 @@ const screens = Array.from(document.querySelectorAll('.screen'));
           .catch(() => {});
       }
 
+      function renderDeviceList(items) {
+        const box = document.getElementById('deviceList');
+        box.innerHTML = '';
+        if (!items || items.length === 0) {
+          box.textContent = 'Устройства не найдены.';
+          return;
+        }
+        items.forEach((item) => {
+          const row = document.createElement('div');
+          row.className = 'flex items-center justify-between gap-2 py-2 border-b border-white/10';
+          const left = document.createElement('div');
+          left.className = 'flex flex-col min-w-0';
+          const title = document.createElement('div');
+          title.className = 'text-white truncate';
+          title.textContent = item.email || item.uuid;
+          const meta = document.createElement('div');
+          meta.className = 'text-muted-gray text-xs';
+          meta.textContent = `${item.online ? 'Онлайн' : 'Офлайн'} · ${formatBytes(item.total || 0)}`;
+          left.appendChild(title);
+          left.appendChild(meta);
+
+          const btn = document.createElement('button');
+          btn.className = 'ios-active border border-primary text-primary font-bold px-2 py-1 rounded-lg text-xs';
+          btn.textContent = 'Удалить';
+          btn.addEventListener('click', async () => {
+            try {
+              await apiFetch('/api/device/remove', { method: 'POST', body: JSON.stringify({ uuid: item.uuid }) });
+              notify('Устройство удалено');
+              loadDevices();
+            } catch (e) {
+              notify('Не удалось удалить устройство');
+            }
+          });
+
+          row.appendChild(left);
+          row.appendChild(btn);
+          box.appendChild(row);
+        });
+      }
+
+      function loadDevices() {
+        apiFetch('/api/device/list')
+          .then((data) => {
+            document.getElementById('deviceLimit').textContent = data.device_limit || 0;
+            document.getElementById('deviceCount').textContent = data.connected || 0;
+            renderDeviceList(data.items || []);
+          })
+          .catch(() => {
+            const box = document.getElementById('deviceList');
+            box.textContent = 'Не удалось загрузить устройства.';
+          });
+      }
+
+      document.getElementById('addDeviceBtn').addEventListener('click', async () => {
+        try {
+          const res = await apiFetch('/api/device/add', { method: 'POST' });
+          if (res.key) {
+            await navigator.clipboard.writeText(res.key).catch(() => {});
+            notify('Ключ нового устройства скопирован');
+          } else {
+            notify('Устройство добавлено');
+          }
+          loadDevices();
+        } catch (e) {
+          if (e && e.message === 'device_limit_reached') notify('Достигнут лимит устройств');
+          else notify('Не удалось добавить устройство');
+        }
+      });
+
       document.getElementById('resetDeviceBtn').addEventListener('click', () => {
-        apiFetch('/api/device/reset', { method: 'POST' }).catch(() => {});
-        notify('Запрос на сброс отправлен.');
+        apiFetch('/api/device/reset', { method: 'POST' })
+          .then((res) => {
+            if (res.key) {
+              navigator.clipboard.writeText(res.key).catch(() => {});
+              notify('Ключ после сброса скопирован');
+            } else {
+              notify('Ключ сброшен');
+            }
+            loadDevices();
+          })
+          .catch(() => notify('Не удалось сбросить ключ'));
       });
 
       document.getElementById('soloPay').addEventListener('click', () => notify('Оплата будет подключена позже.'));
@@ -208,8 +306,19 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       document.getElementById('adminOnline').addEventListener('click', async () => {
         try {
           const data = await adminFetch('/api/admin/stats');
-          const list = data.online && data.online.length ? data.online.join(', ') : 'онлайн 0';
-          notify(list);
+          const box = document.getElementById('adminOnlineList');
+          box.innerHTML = '';
+          if (!data.online || data.online.length === 0) {
+            box.textContent = 'Онлайн: 0';
+          } else {
+            data.online.forEach((name) => {
+              const row = document.createElement('div');
+              row.className = 'py-1 border-b border-white/10';
+              row.textContent = `• ${name}`;
+              box.appendChild(row);
+            });
+          }
+          notify('Список онлайн обновлен');
         } catch (e) {
           notify('Ошибка');
         }
@@ -285,6 +394,53 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         try {
           await adminFetch('/api/admin/user/delete', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
           notify('Пользователь удален');
+          loadAdminUsers();
+        } catch (e) {
+          notify('Ошибка');
+        }
+      });
+
+      document.getElementById('adminTrial7').addEventListener('click', async () => {
+        const userId = document.getElementById('adminUserId').value.trim();
+        if (!userId) return notify('Выбери пользователя');
+        try {
+          await adminFetch('/api/admin/user/trial7', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
+          notify('Выдан trial 7 дней');
+          loadAdminUsers();
+        } catch (e) {
+          notify('Ошибка');
+        }
+      });
+      document.getElementById('adminExtend').addEventListener('click', async () => {
+        const userId = document.getElementById('adminUserId').value.trim();
+        const days = parseInt(document.getElementById('adminDays').value || '0', 10);
+        if (!userId) return notify('Выбери пользователя');
+        if (!days || days < 1) return notify('Укажи дни');
+        try {
+          await adminFetch('/api/admin/user/extend', { method: 'POST', body: JSON.stringify({ user_id: userId, days }) });
+          notify(`Продлено на ${days} дн.`);
+          loadAdminUsers();
+        } catch (e) {
+          notify('Ошибка');
+        }
+      });
+      document.getElementById('adminUnlimited').addEventListener('click', async () => {
+        const userId = document.getElementById('adminUserId').value.trim();
+        if (!userId) return notify('Выбери пользователя');
+        try {
+          await adminFetch('/api/admin/user/unlimited', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
+          notify('Выдан доступ без срока');
+          loadAdminUsers();
+        } catch (e) {
+          notify('Ошибка');
+        }
+      });
+      document.getElementById('adminResetSub').addEventListener('click', async () => {
+        const userId = document.getElementById('adminUserId').value.trim();
+        if (!userId) return notify('Выбери пользователя');
+        try {
+          await adminFetch('/api/admin/user/reset_subscription', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
+          notify('Подписка сброшена');
           loadAdminUsers();
         } catch (e) {
           notify('Ошибка');
@@ -420,7 +576,9 @@ const screens = Array.from(document.querySelectorAll('.screen'));
           (data.items || []).forEach(u => {
             const opt = document.createElement('option');
             opt.value = u.id;
-            opt.textContent = `${u.name} (${u.id}) [${u.status}]`;
+            const label = (u.display_name || u.name || u.id).trim();
+            const withId = label === u.id || label === `ID ${u.id}` ? label : `${label} (${u.id})`;
+            opt.textContent = `${withId} [${u.status}]`;
             sel.appendChild(opt);
           });
           notify('Список пользователей обновлен');
