@@ -59,6 +59,24 @@
       .screen.active {
         display: block;
       }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 24px;
+        transform: translateX(-50%);
+        background: #0f0f0f;
+        border: 1px solid #b8ff00;
+        color: #d6ff7a;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 14px;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.18s ease;
+      }
+      .toast.show {
+        opacity: 1;
+      }
     </style>
   </head>
   <body class="flex flex-col p-6">
@@ -120,6 +138,12 @@
             <span class="text-primary text-sm font-bold">Поддержка</span>
           </button>
         </div>
+        <button id="homeAdminBtn"
+          class="hidden ios-active mt-4 w-full border border-primary h-[52px] rounded-2xl flex items-center justify-center gap-2"
+        >
+          <span class="material-symbols-outlined text-primary">admin_panel_settings</span>
+          <span class="text-primary font-bold">Админка</span>
+        </button>
       </section>
 
       <section id="screen-tariffs" class="screen">
@@ -162,7 +186,6 @@
           <button id="profileSupportBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Связаться с поддержкой</button>
           <button id="profileRulesBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Устав клуба</button>
           <button id="profileDevicesBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">Управление устройствами</button>
-          <button id="profileAdminBtn" class="hidden ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">Админка</button>
         </div>
       </section>
 
@@ -205,8 +228,7 @@
 
       <section id="screen-admin" class="screen">
         <h2 class="text-2xl font-bold mb-4">Админка</h2>
-        <div class="text-muted-gray text-sm mb-4">Админ‑панель работает прямо здесь.</div>
-        <div id="adminStatus" class="bg-card-dark rounded-2xl p-3 text-sm text-muted-gray mb-4">Готово</div>
+        <div class="text-muted-gray text-sm mb-4">Управление панелью и клиентами в одном месте.</div>
 
         <div class="border border-primary rounded-2xl p-4 mb-4">
           <div class="text-white font-bold mb-2">Сервер</div>
@@ -232,34 +254,28 @@
 
         <div class="border border-primary rounded-2xl p-4 mb-4">
           <div class="text-white font-bold mb-2">Пользователи</div>
-          <div class="flex gap-2">
-            <input id="adminUserId" class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2" placeholder="Telegram ID" />
-          </div>
+          <select id="adminUserId" class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2">
+            <option value="">Выбери пользователя</option>
+          </select>
           <div class="flex gap-2 mt-3">
             <button id="adminBan" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Бан</button>
             <button id="adminUnban" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Разбан</button>
             <button id="adminDelete" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Удалить</button>
           </div>
+          <button id="adminUsersRefresh" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full mt-3">Обновить список пользователей</button>
           <button id="adminAddSlots" class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full mt-3">+5 мест</button>
         </div>
 
         <div class="border border-primary rounded-2xl p-4 mb-4">
           <div class="text-white font-bold mb-2">Клиенты (как в панели)</div>
           <button id="adminClientsRefresh" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Обновить список</button>
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <input id="adminClientEmail" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2 col-span-2" placeholder="Название/Email клиента" />
+            <input id="adminClientTgId" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2" placeholder="tg_id (опц.)" />
+            <input id="adminClientLimit" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2" type="number" min="1" max="50" value="3" />
+          </div>
+          <button id="adminClientCreate" class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full mt-3">Добавить клиента вручную</button>
           <div id="adminClients" class="mt-3 text-sm text-muted-gray">Список пуст</div>
-        </div>
-
-        <div class="border border-primary rounded-2xl p-4 mb-4">
-          <div class="text-white font-bold mb-2">VIP</div>
-          <div class="flex gap-2">
-            <button id="adminVipShow" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Показать</button>
-            <button id="adminVipInc" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">+1</button>
-            <button id="adminVipDec" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">-1</button>
-          </div>
-          <div class="flex gap-2 mt-3">
-            <button id="adminVipRotate" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Сменить ключ</button>
-            <button id="adminVipDelete" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Удалить VIP</button>
-          </div>
         </div>
 
         <button id="adminBackup" class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full">Бэкап</button>
@@ -381,18 +397,19 @@
       }
 
       function notify(text) {
-        if (tg && tg.showPopup) {
-          tg.showPopup({ message: text, buttons: [{ type: 'ok' }] });
-        }
+        const el = document.createElement('div');
+        el.className = 'toast';
+        el.textContent = text;
+        document.body.appendChild(el);
+        requestAnimationFrame(() => el.classList.add('show'));
+        setTimeout(() => {
+          el.classList.remove('show');
+          setTimeout(() => el.remove(), 180);
+        }, 1800);
       }
 
       function adminFetch(path, options = {}) {
         return apiFetch(path, options);
-      }
-
-      function setAdminStatus(text) {
-        const box = document.getElementById('adminStatus');
-        if (box) box.textContent = text;
       }
 
       document.getElementById('buyBtn').addEventListener('click', () => pushScreen('screen-tariffs'));
@@ -455,44 +472,47 @@
       });
 
       if (USER_ID === ADMIN_ID) {
-        const adminBtn = document.getElementById('profileAdminBtn');
+        const adminBtn = document.getElementById('homeAdminBtn');
         adminBtn.classList.remove('hidden');
-        adminBtn.addEventListener('click', () => pushScreen('screen-admin'));
+        adminBtn.addEventListener('click', () => {
+          pushScreen('screen-admin');
+          loadAdminUsers();
+        });
       }
 
       document.getElementById('adminStats').addEventListener('click', async () => {
         try {
           const data = await adminFetch('/api/admin/stats');
-          setAdminStatus('ОК');
+          notify('Статистика обновлена');
           const box = document.getElementById('adminStatsBox');
           box.textContent = `ОЗУ: ${data.free_mem_mb} MB | Онлайн: ${data.online.length} | Места: ${data.total}/${data.max_users}`;
         } catch (e) {
-          setAdminStatus('Ошибка');
+          notify('Ошибка');
         }
       });
       document.getElementById('adminOnline').addEventListener('click', async () => {
         try {
           const data = await adminFetch('/api/admin/stats');
           const list = data.online && data.online.length ? data.online.join(', ') : 'онлайн 0';
-          setAdminStatus(list);
+          notify(list);
         } catch (e) {
-          setAdminStatus('Ошибка');
+          notify('Ошибка');
         }
       });
       document.getElementById('adminRestart').addEventListener('click', async () => {
         try {
           await adminFetch('/api/admin/xray/restart', { method: 'POST' });
-          setAdminStatus('Xray перезапущен');
+          notify('Xray перезапущен');
         } catch (e) {
-          setAdminStatus('Ошибка');
+          notify('Ошибка');
         }
       });
       document.getElementById('adminLock').addEventListener('click', async () => {
         try {
           const r = await adminFetch('/api/admin/panel/lock', { method: 'POST' });
-          setAdminStatus(r.message || 'Панель закрыта');
+          notify(r.message || 'Панель закрыта');
         } catch (e) {
-          setAdminStatus('Ошибка');
+          notify('Ошибка');
         }
       });
       document.getElementById('adminUnlock').addEventListener('click', async () => {
@@ -500,25 +520,26 @@
         if (!ip) return notify('Укажи IP');
         try {
           const r = await adminFetch('/api/admin/panel/unlock', { method: 'POST', body: JSON.stringify({ ip }) });
-          setAdminStatus(r.message || 'Панель открыта');
+          notify(r.message || 'Панель открыта');
         } catch (e) {
-          setAdminStatus('Ошибка');
+          notify('Ошибка');
         }
       });
       document.getElementById('adminIpShow').addEventListener('click', async () => {
         try {
           const r = await adminFetch('/api/admin/myip');
-          setAdminStatus(`Твой IP: ${r.ip || '-'}`);
+          notify(`Твой IP: ${r.ip || '-'}`);
+          if (r.ip) document.getElementById('adminIp').value = r.ip;
         } catch (e) {
-          setAdminStatus('Ошибка');
+          notify('Ошибка');
         }
       });
       document.getElementById('adminAddSlots').addEventListener('click', async () => {
         try {
           const r = await adminFetch('/api/admin/add_slots', { method: 'POST' });
-          setAdminStatus(`Новый лимит: ${r.max_users}`);
+          notify(`Новый лимит: ${r.max_users}`);
         } catch (e) {
-          setAdminStatus('Ошибка');
+          notify('Ошибка');
         }
       });
       document.getElementById('adminBan').addEventListener('click', async () => {
@@ -526,9 +547,10 @@
         if (!userId) return notify('Укажи Telegram ID');
         try {
           await adminFetch('/api/admin/user/ban', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
-          setAdminStatus('Пользователь забанен');
+          notify('Пользователь забанен');
+          loadAdminUsers();
         } catch (e) {
-          setAdminStatus('Ошибка');
+          notify('Ошибка');
         }
       });
       document.getElementById('adminUnban').addEventListener('click', async () => {
@@ -536,9 +558,10 @@
         if (!userId) return notify('Укажи Telegram ID');
         try {
           await adminFetch('/api/admin/user/unban', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
-          setAdminStatus('Пользователь разблокирован');
+          notify('Пользователь разблокирован');
+          loadAdminUsers();
         } catch (e) {
-          setAdminStatus('Ошибка');
+          notify('Ошибка');
         }
       });
       document.getElementById('adminDelete').addEventListener('click', async () => {
@@ -546,49 +569,29 @@
         if (!userId) return notify('Укажи Telegram ID');
         try {
           await adminFetch('/api/admin/user/delete', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
-          setAdminStatus('Пользователь удален');
+          notify('Пользователь удален');
+          loadAdminUsers();
         } catch (e) {
-          setAdminStatus('Ошибка');
+          notify('Ошибка');
         }
       });
-      document.getElementById('adminVipShow').addEventListener('click', async () => {
+      document.getElementById('adminUsersRefresh').addEventListener('click', loadAdminUsers);
+
+      document.getElementById('adminClientCreate').addEventListener('click', async () => {
+        const email = document.getElementById('adminClientEmail').value.trim();
+        const tgId = document.getElementById('adminClientTgId').value.trim();
+        const limit = parseInt(document.getElementById('adminClientLimit').value || '3', 10);
+        if (!email) return notify('Укажи название/email клиента');
         try {
-          const r = await adminFetch('/api/admin/vip/show', { method: 'POST' });
-          setAdminStatus(r.uuid ? `VIP: ${r.uuid} (лимит ${r.limit})` : 'VIP не создан');
+          await adminFetch('/api/admin/client/create', {
+            method: 'POST',
+            body: JSON.stringify({ email: email, tg_id: tgId || 'manual', limit: limit })
+          });
+          notify('Клиент добавлен');
+          document.getElementById('adminClientEmail').value = '';
+          loadAdminClients();
         } catch (e) {
-          setAdminStatus('Ошибка');
-        }
-      });
-      document.getElementById('adminVipInc').addEventListener('click', async () => {
-        try {
-          const r = await adminFetch('/api/admin/vip/inc', { method: 'POST' });
-          setAdminStatus(`VIP лимит: ${r.limit}`);
-        } catch (e) {
-          setAdminStatus('Ошибка');
-        }
-      });
-      document.getElementById('adminVipDec').addEventListener('click', async () => {
-        try {
-          const r = await adminFetch('/api/admin/vip/dec', { method: 'POST' });
-          setAdminStatus(`VIP лимит: ${r.limit}`);
-        } catch (e) {
-          setAdminStatus('Ошибка');
-        }
-      });
-      document.getElementById('adminVipRotate').addEventListener('click', async () => {
-        try {
-          const r = await adminFetch('/api/admin/vip/rotate', { method: 'POST' });
-          setAdminStatus(`VIP обновлен: ${r.uuid || '-'}`);
-        } catch (e) {
-          setAdminStatus('Ошибка');
-        }
-      });
-      document.getElementById('adminVipDelete').addEventListener('click', async () => {
-        try {
-          await adminFetch('/api/admin/vip/delete', { method: 'POST' });
-          setAdminStatus('VIP удален');
-        } catch (e) {
-          setAdminStatus('Ошибка');
+          notify('Ошибка');
         }
       });
       document.getElementById('adminBackup').addEventListener('click', async () => {
@@ -606,9 +609,9 @@
           a.click();
           a.remove();
           URL.revokeObjectURL(url);
-          setAdminStatus('Бэкап скачан');
+          notify('Бэкап скачан');
         } catch (e) {
-          setAdminStatus('Ошибка');
+          notify('Ошибка');
         }
       });
 
@@ -658,10 +661,10 @@
                   method: 'POST',
                   body: JSON.stringify({ uuid: item.uuid, enable: !item.enable })
                 });
-                setAdminStatus('Сохранено');
+                notify('Сохранено');
                 loadAdminClients();
               } catch (e) {
-                setAdminStatus('Ошибка');
+                notify('Ошибка');
               }
             });
             const del = document.createElement('button');
@@ -673,10 +676,10 @@
                   method: 'POST',
                   body: JSON.stringify({ uuid: item.uuid })
                 });
-                setAdminStatus('Удалено');
+                notify('Удалено');
                 loadAdminClients();
               } catch (e) {
-                setAdminStatus('Ошибка');
+                notify('Ошибка');
               }
             });
             right.appendChild(toggle);
@@ -692,6 +695,24 @@
       }
 
       document.getElementById('adminClientsRefresh').addEventListener('click', loadAdminClients);
+
+      async function loadAdminUsers() {
+        const sel = document.getElementById('adminUserId');
+        if (!sel) return;
+        try {
+          const data = await adminFetch('/api/admin/users');
+          sel.innerHTML = '<option value="">Выбери пользователя</option>';
+          (data.items || []).forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u.id;
+            opt.textContent = `${u.name} (${u.id}) [${u.status}]`;
+            sel.appendChild(opt);
+          });
+          notify('Список пользователей обновлен');
+        } catch (e) {
+          notify('Ошибка загрузки пользователей');
+        }
+      }
 
       loadUser();
     </script>
