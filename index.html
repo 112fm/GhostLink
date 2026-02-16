@@ -95,14 +95,8 @@
           <button id="buyBtn"
             class="ios-active w-full bg-primary h-[60px] rounded-2xl flex items-center justify-between px-6"
           >
-            <span class="text-black font-bold text-lg">Купить подписку</span>
-            <span class="material-symbols-outlined text-black">credit_card</span>
-          </button>
-          <button id="setupBtn"
-            class="ios-active w-full border border-primary h-[60px] rounded-2xl flex items-center justify-between px-6"
-          >
-            <span class="text-primary font-bold text-lg">Установка и настройка</span>
-            <span class="material-symbols-outlined text-primary">download</span>
+            <span class="text-black font-bold text-lg">Поддержать проект</span>
+            <span class="material-symbols-outlined text-black">favorite</span>
           </button>
         </div>
 
@@ -123,84 +117,29 @@
       </section>
 
       <section id="screen-tariffs" class="screen">
-        <h2 class="text-2xl font-bold mb-4">Тарифы</h2>
-        <div class="grid grid-cols-1 gap-4">
-          <div class="border border-primary rounded-2xl p-4">
-            <div class="text-white text-lg font-bold">Single</div>
-            <div class="text-muted-gray text-sm">1 устройство</div>
-            <div class="mt-3 grid grid-cols-2 gap-2">
-              <button class="tariff-btn ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl" data-tariff="single" data-months="1">1 мес — 150 ₽</button>
-              <button class="tariff-btn ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl" data-tariff="single" data-months="3">3 мес — 400 ₽</button>
-            </div>
-          </div>
-          <div class="border border-primary rounded-2xl p-4">
-            <div class="text-white text-lg font-bold">Trio</div>
-            <div class="text-muted-gray text-sm">3 устройства</div>
-            <div class="mt-3 grid grid-cols-2 gap-2">
-              <button class="tariff-btn ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl" data-tariff="trio" data-months="1">1 мес — 250 ₽</button>
-              <button class="tariff-btn ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl" data-tariff="trio" data-months="3">3 мес — 650 ₽</button>
-            </div>
-          </div>
-          <div class="border border-primary rounded-2xl p-4">
-            <div class="text-white text-lg font-bold">Family</div>
-            <div class="text-muted-gray text-sm">6 устройств</div>
-            <div class="mt-3 grid grid-cols-2 gap-2">
-              <button class="tariff-btn ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl" data-tariff="family" data-months="1">1 мес — 450 ₽</button>
-              <button class="tariff-btn ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl" data-tariff="family" data-months="3">3 мес — 1200 ₽</button>
-            </div>
+        <h2 class="text-2xl font-bold mb-4">Поддержка сервиса</h2>
+        <div class="border border-primary rounded-2xl p-4 mb-4">
+          <div class="text-white text-lg font-bold">Solo Ghost</div>
+          <div class="text-muted-gray text-sm">1 устройство</div>
+          <div class="mt-3">
+            <button id="soloPay" class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full">1 месяц — 150 ₽</button>
           </div>
         </div>
+
+        <div class="border border-primary rounded-2xl p-4">
+          <div class="text-white text-lg font-bold">Flex Squad</div>
+          <div class="text-muted-gray text-sm">Выбери количество устройств</div>
+          <div class="mt-3">
+            <input id="flexSlider" type="range" min="2" max="5" value="2" class="w-full">
+            <div class="flex justify-between text-xs text-muted-gray mt-1">
+              <span>2</span><span>3</span><span>4</span><span>5</span>
+            </div>
+          </div>
+          <div class="mt-3 text-white" id="flexPrice">2 устройства — 225 ₽</div>
+          <button id="flexPay" class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full mt-3">Поддержать</button>
+        </div>
+
         <div class="text-muted-gray text-sm mt-4">Оплата будет подключена позже.</div>
-      </section>
-
-      <section id="screen-setup" class="screen">
-        <h2 class="text-2xl font-bold mb-4">Установка и настройка</h2>
-        <div class="flex flex-col gap-3">
-          <button id="setupThisDevice" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">
-            Настроить на этом устройстве
-          </button>
-          <button id="setupOtherDevice" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">
-            Настроить на другом устройстве
-          </button>
-        </div>
-      </section>
-
-      <section id="screen-device-select" class="screen">
-        <h2 class="text-2xl font-bold mb-4">Выберите устройство</h2>
-        <div class="flex flex-col gap-3">
-          <button class="device-btn ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl" data-os="android">Android</button>
-          <button class="device-btn ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl" data-os="ios">iOS</button>
-          <button class="device-btn ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl" data-os="windows">Windows</button>
-          <button class="device-btn ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl" data-os="mac">MacOS</button>
-        </div>
-      </section>
-
-      <section id="screen-app" class="screen">
-        <h2 class="text-2xl font-bold mb-2">Приложение</h2>
-        <div class="text-muted-gray mb-4">Скачай V2rayTun для твоего устройства.</div>
-        <a id="appLink" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl inline-block" href="#" target="_blank">Скачать V2rayTun</a>
-        <div class="mt-6">
-          <button id="toKeyBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Далее</button>
-        </div>
-      </section>
-
-      <section id="screen-key" class="screen">
-        <h2 class="text-2xl font-bold mb-2">Подписка</h2>
-        <div class="text-muted-gray mb-3">Получение ключа в Mini App отключено.</div>
-        <div class="bg-card-dark rounded-2xl p-4 break-words" id="keyValue">
-          Получи ключ в боте через кнопку «🚀 Получить ключ».
-        </div>
-        <div class="flex gap-3 mt-4">
-          <button id="doneKeyBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Далее</button>
-        </div>
-      </section>
-
-      <section id="screen-done" class="screen">
-        <div class="text-center mt-10">
-          <div class="text-2xl font-bold mb-2">Готово!</div>
-          <div class="text-muted-gray mb-6">Теперь можно включить VPN в приложении V2rayTun.</div>
-          <button id="finishBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">Завершить настройку</button>
-        </div>
       </section>
 
       <section id="screen-profile" class="screen">
@@ -208,12 +147,16 @@
           <div class="text-2xl font-bold" id="profileName">Пользователь</div>
           <div class="text-muted-gray" id="profileId">ID: 0</div>
         </div>
+        <div class="mb-4 text-muted-gray">
+          Текущая скидка: <span id="discountValue">0 ₽</span>
+        </div>
         <div class="flex flex-col gap-3">
-          <button id="profilePayBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Оплата</button>
+          <button id="profilePayBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Поддержать сервис</button>
           <button id="profileRefBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Реферальная программа</button>
           <button id="profileSupportBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Связаться с поддержкой</button>
-          <button id="profileAgreementBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Пользовательское соглашение</button>
+          <button id="profileRulesBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Устав клуба</button>
           <button id="profileDevicesBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">Управление устройствами</button>
+          <button id="profileAdminBtn" class="hidden ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">Админка</button>
         </div>
       </section>
 
@@ -223,9 +166,15 @@
         <a id="supportLink" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl inline-block" href="#" target="_blank">Открыть чат</a>
       </section>
 
-      <section id="screen-agreement" class="screen">
-        <h2 class="text-2xl font-bold mb-2" id="agreementTitle">Пользовательское соглашение</h2>
-        <div class="text-muted-gray text-sm" id="agreementText">Текст загружается...</div>
+      <section id="screen-rules" class="screen">
+        <h2 class="text-2xl font-bold mb-2">Устав клуба</h2>
+        <div class="text-muted-gray text-sm">
+          1. Клуб «Свои для своих». Мы не публичный сервис и держим лимит 50 человек.<br><br>
+          2. Уважай канал: без тяжелых торрентов — оставим скорость для работы и игр.<br><br>
+          3. Поддержка очага: небольшой взнос — это рукопожатие серверу, чтобы он не гас.<br><br>
+          4. Ответственность за инвайт: приглашая друга, ты поручаешься за него.<br><br>
+          5. Свобода маневра: ты сам решаешь, сколько устройств тебе нужно — лимит можно менять.
+        </div>
       </section>
 
       <section id="screen-devices" class="screen">
@@ -239,12 +188,67 @@
 
       <section id="screen-ref" class="screen">
         <h2 class="text-2xl font-bold mb-2">Реферальная программа</h2>
-        <div class="text-muted-gray mb-3">Пригласи друга и получи бонусы.</div>
+        <div class="text-muted-gray mb-3">Пригласи друга — вход только по инвайтам.</div>
         <div class="bg-card-dark rounded-2xl p-4 break-words" id="refLink">ссылка...</div>
         <button id="copyRefBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl mt-4">Скопировать ссылку</button>
         <div class="text-muted-gray text-sm mt-3">
-          Новичок: +3 дня к триалу или -50 ₽ на первый месяц. Пригласивший: +7 дней или 50 ₽ на баланс.
+          Бонусы и плюшки для рефералок подключим чуть позже.
         </div>
+        <div class="mt-4" id="refList"></div>
+      </section>
+
+      <section id="screen-admin" class="screen">
+        <h2 class="text-2xl font-bold mb-4">Админка</h2>
+        <div class="text-muted-gray text-sm mb-4">Команды выполняются через бота. Ответ придет в чат.</div>
+
+        <div class="border border-primary rounded-2xl p-4 mb-4">
+          <div class="text-white font-bold mb-2">Сервер</div>
+          <div class="flex gap-2">
+            <button id="adminStats" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Статистика</button>
+            <button id="adminOnline" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Онлайн</button>
+          </div>
+          <button id="adminRestart" class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full mt-3">Рестарт Xray</button>
+        </div>
+
+        <div class="border border-primary rounded-2xl p-4 mb-4">
+          <div class="text-white font-bold mb-2">Панель</div>
+          <div class="flex gap-2">
+            <button id="adminLock" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Запереть</button>
+            <button id="adminUnlock" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Открыть</button>
+          </div>
+          <div class="mt-3 flex gap-2">
+            <input id="adminIp" class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2" placeholder="IP (например 1.2.3.4)" />
+            <button id="adminIpShow" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl">IP</button>
+          </div>
+        </div>
+
+        <div class="border border-primary rounded-2xl p-4 mb-4">
+          <div class="text-white font-bold mb-2">Пользователи</div>
+          <div class="flex gap-2">
+            <input id="adminUserId" class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2" placeholder="Telegram ID" />
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button id="adminBan" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Бан</button>
+            <button id="adminUnban" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Разбан</button>
+            <button id="adminDelete" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Удалить</button>
+          </div>
+          <button id="adminAddSlots" class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full mt-3">+5 мест</button>
+        </div>
+
+        <div class="border border-primary rounded-2xl p-4 mb-4">
+          <div class="text-white font-bold mb-2">VIP</div>
+          <div class="flex gap-2">
+            <button id="adminVipShow" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Показать</button>
+            <button id="adminVipInc" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">+1</button>
+            <button id="adminVipDec" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">-1</button>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button id="adminVipRotate" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Сменить ключ</button>
+            <button id="adminVipDelete" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Удалить VIP</button>
+          </div>
+        </div>
+
+        <button id="adminBackup" class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full">Бэкап</button>
       </section>
     </main>
 
@@ -277,14 +281,8 @@
 
       const API_BASE = "https://api.112prd.ru:2053";
       const INIT_DATA = tg ? tg.initData : '';
-      const OS = tg && tg.platform ? tg.platform : '';
-
-      const LINKS = {
-        ios: 'https://apps.apple.com/us/app/v2raytun/id6476628951?l=ru',
-        android: 'https://play.google.com/store/apps/details?id=com.v2raytun.android',
-        windows: 'https://github.com/mdf45/v2raytun/releases/download/v3.7.10/v2RayTun_Setup.exe',
-        mac: 'https://apps.apple.com/us/app/v2raytun/id6476628951?l=ru'
-      };
+      const ADMIN_ID = 312826672;
+      const USER_ID = tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 0;
 
       function apiFetch(path, options = {}) {
         if (!API_BASE) return Promise.reject(new Error('no_api'));
@@ -299,6 +297,7 @@
           const data = await r.json().catch(() => ({}));
           if (!r.ok) {
             const err = new Error(data.detail || 'api_error');
+            err.status = r.status;
             err.data = data;
             throw err;
           }
@@ -330,110 +329,121 @@
             document.getElementById('profileId').textContent = 'ID: ' + data.user.id;
             document.getElementById('deviceLimit').textContent = data.device_limit || 3;
             document.getElementById('refLink').textContent = data.referral_link || 'нет ссылки';
+            document.getElementById('discountValue').textContent = data.discount_text || ((data.discount || 0) + ' ₽');
             const supportLink = document.getElementById('supportLink');
             supportLink.href = data.support_link || '#';
           })
-          .catch(() => {});
+          .catch((err) => {
+            if (err && (err.status === 401 || err.status === 403)) {
+              document.getElementById('balanceValue').textContent = '0₽';
+              document.getElementById('expiryValue').textContent = 'доступ закрыт';
+              document.getElementById('subStatus').textContent = 'ДОСТУП ЗАКРЫТ';
+            }
+          });
       }
 
-      function loadAgreement() {
-        apiFetch('/api/agreement').then(data => {
-          document.getElementById('agreementTitle').textContent = data.title;
-          document.getElementById('agreementText').textContent = data.text;
-        }).catch(() => {});
+      function notify(text) {
+        if (tg && tg.showPopup) {
+          tg.showPopup({ message: text, buttons: [{ type: 'ok' }] });
+        }
       }
 
-      function loadKey() {
-        document.getElementById('keyValue').textContent =
-          'Получи ключ в боте через кнопку «🚀 Получить ключ».';
-      }
-
-      function subscribe(tariffId, months) {
-        return apiFetch('/api/subscribe', {
-          method: 'POST',
-          body: JSON.stringify({ tariff_id: tariffId, months: months })
-        }).then(data => {
-          if (data && data.ok) {
-            loadUser();
-            return data;
-          }
-          throw new Error('subscribe_failed');
-        });
+      function sendAdmin(action, payload = {}) {
+        if (!tg || USER_ID !== ADMIN_ID) return;
+        tg.sendData(JSON.stringify({ action, payload }));
+        notify('Команда отправлена. Ответ придет в чат.');
       }
 
       document.getElementById('buyBtn').addEventListener('click', () => pushScreen('screen-tariffs'));
-      document.getElementById('setupBtn').addEventListener('click', () => pushScreen('screen-setup'));
       document.getElementById('profileBtn').addEventListener('click', () => pushScreen('screen-profile'));
       document.getElementById('supportBtn').addEventListener('click', () => pushScreen('screen-support'));
 
       document.getElementById('profilePayBtn').addEventListener('click', () => pushScreen('screen-tariffs'));
-      document.getElementById('profileRefBtn').addEventListener('click', () => pushScreen('screen-ref'));
+      document.getElementById('profileRefBtn').addEventListener('click', () => { pushScreen('screen-ref'); loadReferrals(); });
       document.getElementById('profileSupportBtn').addEventListener('click', () => pushScreen('screen-support'));
-      document.getElementById('profileAgreementBtn').addEventListener('click', () => { pushScreen('screen-agreement'); loadAgreement(); });
+      document.getElementById('profileRulesBtn').addEventListener('click', () => pushScreen('screen-rules'));
       document.getElementById('profileDevicesBtn').addEventListener('click', () => pushScreen('screen-devices'));
-
-      document.getElementById('setupThisDevice').addEventListener('click', () => {
-        const os = OS === 'ios' ? 'ios' : OS === 'android' ? 'android' : OS === 'macos' ? 'mac' : 'windows';
-        const link = LINKS[os] || LINKS.android;
-        document.getElementById('appLink').href = link;
-        pushScreen('screen-app');
-      });
-
-      document.getElementById('setupOtherDevice').addEventListener('click', () => pushScreen('screen-device-select'));
-
-      document.querySelectorAll('.device-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const os = btn.getAttribute('data-os');
-          document.getElementById('appLink').href = LINKS[os] || LINKS.android;
-          pushScreen('screen-app');
-        });
-      });
-
-      document.getElementById('toKeyBtn').addEventListener('click', () => {
-        pushScreen('screen-key');
-        loadKey();
-      });
-
-      document.getElementById('doneKeyBtn').addEventListener('click', () => pushScreen('screen-done'));
-      document.getElementById('finishBtn').addEventListener('click', () => { stack.length = 1; showScreen('screen-home'); });
 
       document.getElementById('copyRefBtn').addEventListener('click', async () => {
         const text = document.getElementById('refLink').textContent;
         try { await navigator.clipboard.writeText(text); } catch (e) {}
       });
 
-      document.getElementById('resetDeviceBtn').addEventListener('click', () => {
-        apiFetch('/api/device/reset', { method: 'POST' })
+      function loadReferrals() {
+        apiFetch('/api/referrals')
           .then(data => {
-            document.getElementById('keyValue').textContent = data.key || 'ключ обновлен';
+            const box = document.getElementById('refList');
+            if (!data.items || data.items.length === 0) {
+              box.textContent = 'Пока никого нет.';
+              box.className = 'text-muted-gray text-sm';
+              return;
+            }
+            box.innerHTML = '';
+            data.items.forEach(item => {
+              const row = document.createElement('div');
+              row.className = 'flex items-center justify-between py-2 border-b border-white/10 text-sm';
+              const status = item.status === 'paid' ? 'Оплачено' : 'Ожидает оплаты';
+              row.innerHTML = `<span>${item.name}</span><span class="text-muted-gray">${status}</span>`;
+              box.appendChild(row);
+            });
           })
           .catch(() => {});
-      });
-
-      document.querySelectorAll('.tariff-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const tariff = btn.getAttribute('data-tariff');
-          const months = parseInt(btn.getAttribute('data-months'), 10);
-          btn.disabled = true;
-          const oldText = btn.textContent;
-          btn.textContent = 'Обработка...';
-          try {
-            await subscribe(tariff, months);
-            btn.textContent = 'Готово';
-          } catch (e) {
-            btn.textContent = 'Ошибка';
-          } finally {
-            setTimeout(() => {
-              btn.disabled = false;
-              btn.textContent = oldText;
-            }, 1500);
-          }
-        });
-      });
-
-      if (!INIT_DATA) {
-        document.getElementById('keyValue').textContent = 'Открой через Telegram';
       }
+
+      document.getElementById('resetDeviceBtn').addEventListener('click', () => {
+        apiFetch('/api/device/reset', { method: 'POST' }).catch(() => {});
+        notify('Запрос на сброс отправлен.');
+      });
+
+      document.getElementById('soloPay').addEventListener('click', () => notify('Оплата будет подключена позже.'));
+      document.getElementById('flexPay').addEventListener('click', () => notify('Оплата будет подключена позже.'));
+
+      const flexPrices = { 2: 225, 3: 300, 4: 375, 5: 450 };
+      const flexSlider = document.getElementById('flexSlider');
+      flexSlider.addEventListener('input', () => {
+        const v = parseInt(flexSlider.value, 10);
+        document.getElementById('flexPrice').textContent = `${v} устройства — ${flexPrices[v]} ₽`;
+      });
+
+      if (USER_ID === ADMIN_ID) {
+        const adminBtn = document.getElementById('profileAdminBtn');
+        adminBtn.classList.remove('hidden');
+        adminBtn.addEventListener('click', () => pushScreen('screen-admin'));
+      }
+
+      document.getElementById('adminStats').addEventListener('click', () => sendAdmin('admin_stats'));
+      document.getElementById('adminOnline').addEventListener('click', () => sendAdmin('admin_stats'));
+      document.getElementById('adminRestart').addEventListener('click', () => sendAdmin('admin_restart_xray'));
+      document.getElementById('adminLock').addEventListener('click', () => sendAdmin('admin_panel_lock'));
+      document.getElementById('adminUnlock').addEventListener('click', () => {
+        const ip = document.getElementById('adminIp').value.trim();
+        if (!ip) return notify('Укажи IP');
+        sendAdmin('admin_panel_unlock', { ip });
+      });
+      document.getElementById('adminIpShow').addEventListener('click', () => sendAdmin('admin_panel_ip'));
+      document.getElementById('adminAddSlots').addEventListener('click', () => sendAdmin('admin_add_slots'));
+      document.getElementById('adminBan').addEventListener('click', () => {
+        const userId = document.getElementById('adminUserId').value.trim();
+        if (!userId) return notify('Укажи Telegram ID');
+        sendAdmin('admin_ban_user', { user_id: userId });
+      });
+      document.getElementById('adminUnban').addEventListener('click', () => {
+        const userId = document.getElementById('adminUserId').value.trim();
+        if (!userId) return notify('Укажи Telegram ID');
+        sendAdmin('admin_unban_user', { user_id: userId });
+      });
+      document.getElementById('adminDelete').addEventListener('click', () => {
+        const userId = document.getElementById('adminUserId').value.trim();
+        if (!userId) return notify('Укажи Telegram ID');
+        sendAdmin('admin_delete_user', { user_id: userId });
+      });
+      document.getElementById('adminVipShow').addEventListener('click', () => sendAdmin('vip_show'));
+      document.getElementById('adminVipInc').addEventListener('click', () => sendAdmin('vip_inc'));
+      document.getElementById('adminVipDec').addEventListener('click', () => sendAdmin('vip_dec'));
+      document.getElementById('adminVipRotate').addEventListener('click', () => sendAdmin('vip_rotate'));
+      document.getElementById('adminVipDelete').addEventListener('click', () => sendAdmin('admin_delete_vip'));
+      document.getElementById('adminBackup').addEventListener('click', () => sendAdmin('admin_backup'));
+
       loadUser();
     </script>
   </body>
