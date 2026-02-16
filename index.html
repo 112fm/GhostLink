@@ -186,10 +186,11 @@
 
       <section id="screen-key" class="screen">
         <h2 class="text-2xl font-bold mb-2">Подписка</h2>
-        <div class="text-muted-gray mb-3">Скопируй ключ и добавь в приложение.</div>
-        <div class="bg-card-dark rounded-2xl p-4 break-words" id="keyValue">ключ загрузится...</div>
+        <div class="text-muted-gray mb-3">Получение ключа в Mini App отключено.</div>
+        <div class="bg-card-dark rounded-2xl p-4 break-words" id="keyValue">
+          Получи ключ в боте через кнопку «🚀 Получить ключ».
+        </div>
         <div class="flex gap-3 mt-4">
-          <button id="copyKeyBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">Скопировать</button>
           <button id="doneKeyBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Далее</button>
         </div>
       </section>
@@ -343,12 +344,8 @@
       }
 
       function loadKey() {
-        apiFetch('/api/key', { method: 'POST' }).then(data => {
-          document.getElementById('keyValue').textContent = data.key || 'нет ключа';
-        }).catch((err) => {
-          const msg = err && err.message ? err.message : 'Не удалось получить ключ';
-          document.getElementById('keyValue').textContent = `Не удалось получить ключ: ${msg}`;
-        });
+        document.getElementById('keyValue').textContent =
+          'Получи ключ в боте через кнопку «🚀 Получить ключ».';
       }
 
       function subscribe(tariffId, months) {
@@ -395,13 +392,6 @@
       document.getElementById('toKeyBtn').addEventListener('click', () => {
         pushScreen('screen-key');
         loadKey();
-      });
-
-      document.getElementById('copyKeyBtn').addEventListener('click', async () => {
-        const text = document.getElementById('keyValue').textContent;
-        try {
-          await navigator.clipboard.writeText(text);
-        } catch (e) {}
       });
 
       document.getElementById('doneKeyBtn').addEventListener('click', () => pushScreen('screen-done'));
