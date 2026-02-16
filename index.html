@@ -199,7 +199,8 @@
 
       <section id="screen-admin" class="screen">
         <h2 class="text-2xl font-bold mb-4">Админка</h2>
-        <div class="text-muted-gray text-sm mb-4">Команды выполняются через бота. Ответ придет в чат.</div>
+        <div class="text-muted-gray text-sm mb-4">Админ‑панель работает прямо здесь.</div>
+        <div id="adminStatus" class="bg-card-dark rounded-2xl p-3 text-sm text-muted-gray mb-4">Готово</div>
 
         <div class="border border-primary rounded-2xl p-4 mb-4">
           <div class="text-white font-bold mb-2">Сервер</div>
@@ -207,6 +208,7 @@
             <button id="adminStats" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Статистика</button>
             <button id="adminOnline" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Онлайн</button>
           </div>
+          <div class="mt-2 text-muted-gray text-sm" id="adminStatsBox">ОЗУ: — | Онлайн: —</div>
           <button id="adminRestart" class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full mt-3">Рестарт Xray</button>
         </div>
 
@@ -318,6 +320,8 @@
         }
       }
 
+      let supportUrl = '';
+
       function loadUser() {
         if (!API_BASE || !INIT_DATA) return;
         apiFetch('/api/user')
@@ -330,8 +334,9 @@
             document.getElementById('deviceLimit').textContent = data.device_limit || 3;
             document.getElementById('refLink').textContent = data.referral_link || 'нет ссылки';
             document.getElementById('discountValue').textContent = data.discount_text || ((data.discount || 0) + ' ₽');
+            supportUrl = data.support_link || 'https://t.me/ghostlink112_bot';
             const supportLink = document.getElementById('supportLink');
-            supportLink.href = data.support_link || '#';
+            supportLink.href = supportUrl;
           })
           .catch((err) => {
             if (err && (err.status === 401 || err.status === 403)) {
@@ -348,10 +353,13 @@
         }
       }
 
-      function sendAdmin(action, payload = {}) {
-        if (!tg || USER_ID !== ADMIN_ID) return;
-        tg.sendData(JSON.stringify({ action, payload }));
-        notify('Команда отправлена. Ответ придет в чат.');
+      function adminFetch(path, options = {}) {
+        return apiFetch(path, options);
+      }
+
+      function setAdminStatus(text) {
+        const box = document.getElementById('adminStatus');
+        if (box) box.textContent = text;
       }
 
       document.getElementById('buyBtn').addEventListener('click', () => pushScreen('screen-tariffs'));
@@ -367,6 +375,14 @@
       document.getElementById('copyRefBtn').addEventListener('click', async () => {
         const text = document.getElementById('refLink').textContent;
         try { await navigator.clipboard.writeText(text); } catch (e) {}
+      });
+
+      document.getElementById('supportLink').addEventListener('click', (e) => {
+        if (!supportUrl) return;
+        if (tg && tg.openTelegramLink) {
+          e.preventDefault();
+          tg.openTelegramLink(supportUrl);
+        }
       });
 
       function loadReferrals() {
@@ -411,38 +427,157 @@
         adminBtn.addEventListener('click', () => pushScreen('screen-admin'));
       }
 
-      document.getElementById('adminStats').addEventListener('click', () => sendAdmin('admin_stats'));
-      document.getElementById('adminOnline').addEventListener('click', () => sendAdmin('admin_stats'));
-      document.getElementById('adminRestart').addEventListener('click', () => sendAdmin('admin_restart_xray'));
-      document.getElementById('adminLock').addEventListener('click', () => sendAdmin('admin_panel_lock'));
-      document.getElementById('adminUnlock').addEventListener('click', () => {
+      document.getElementById('adminStats').addEventListener('click', async () => {
+        try {
+          const data = await adminFetch('/api/admin/stats');
+          setAdminStatus('ОК');
+          const box = document.getElementById('adminStatsBox');
+          box.textContent = `ОЗУ: ${data.free_mem_mb} MB | Онлайн: ${data.online.length} | Места: ${data.total}/${data.max_users}`;
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
+      });
+      document.getElementById('adminOnline').addEventListener('click', async () => {
+        try {
+          const data = await adminFetch('/api/admin/stats');
+          const list = data.online && data.online.length ? data.online.join(', ') : 'онлайн 0';
+          setAdminStatus(list);
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
+      });
+      document.getElementById('adminRestart').addEventListener('click', async () => {
+        try {
+          await adminFetch('/api/admin/xray/restart', { method: 'POST' });
+          setAdminStatus('Xray перезапущен');
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
+      });
+      document.getElementById('adminLock').addEventListener('click', async () => {
+        try {
+          const r = await adminFetch('/api/admin/panel/lock', { method: 'POST' });
+          setAdminStatus(r.message || 'Панель закрыта');
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
+      });
+      document.getElementById('adminUnlock').addEventListener('click', async () => {
         const ip = document.getElementById('adminIp').value.trim();
         if (!ip) return notify('Укажи IP');
-        sendAdmin('admin_panel_unlock', { ip });
+        try {
+          const r = await adminFetch('/api/admin/panel/unlock', { method: 'POST', body: JSON.stringify({ ip }) });
+          setAdminStatus(r.message || 'Панель открыта');
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
       });
-      document.getElementById('adminIpShow').addEventListener('click', () => sendAdmin('admin_panel_ip'));
-      document.getElementById('adminAddSlots').addEventListener('click', () => sendAdmin('admin_add_slots'));
-      document.getElementById('adminBan').addEventListener('click', () => {
+      document.getElementById('adminIpShow').addEventListener('click', async () => {
+        try {
+          const r = await adminFetch('/api/admin/myip');
+          setAdminStatus(`Твой IP: ${r.ip || '-'}`);
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
+      });
+      document.getElementById('adminAddSlots').addEventListener('click', async () => {
+        try {
+          const r = await adminFetch('/api/admin/add_slots', { method: 'POST' });
+          setAdminStatus(`Новый лимит: ${r.max_users}`);
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
+      });
+      document.getElementById('adminBan').addEventListener('click', async () => {
         const userId = document.getElementById('adminUserId').value.trim();
         if (!userId) return notify('Укажи Telegram ID');
-        sendAdmin('admin_ban_user', { user_id: userId });
+        try {
+          await adminFetch('/api/admin/user/ban', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
+          setAdminStatus('Пользователь забанен');
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
       });
-      document.getElementById('adminUnban').addEventListener('click', () => {
+      document.getElementById('adminUnban').addEventListener('click', async () => {
         const userId = document.getElementById('adminUserId').value.trim();
         if (!userId) return notify('Укажи Telegram ID');
-        sendAdmin('admin_unban_user', { user_id: userId });
+        try {
+          await adminFetch('/api/admin/user/unban', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
+          setAdminStatus('Пользователь разблокирован');
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
       });
-      document.getElementById('adminDelete').addEventListener('click', () => {
+      document.getElementById('adminDelete').addEventListener('click', async () => {
         const userId = document.getElementById('adminUserId').value.trim();
         if (!userId) return notify('Укажи Telegram ID');
-        sendAdmin('admin_delete_user', { user_id: userId });
+        try {
+          await adminFetch('/api/admin/user/delete', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
+          setAdminStatus('Пользователь удален');
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
       });
-      document.getElementById('adminVipShow').addEventListener('click', () => sendAdmin('vip_show'));
-      document.getElementById('adminVipInc').addEventListener('click', () => sendAdmin('vip_inc'));
-      document.getElementById('adminVipDec').addEventListener('click', () => sendAdmin('vip_dec'));
-      document.getElementById('adminVipRotate').addEventListener('click', () => sendAdmin('vip_rotate'));
-      document.getElementById('adminVipDelete').addEventListener('click', () => sendAdmin('admin_delete_vip'));
-      document.getElementById('adminBackup').addEventListener('click', () => sendAdmin('admin_backup'));
+      document.getElementById('adminVipShow').addEventListener('click', async () => {
+        try {
+          const r = await adminFetch('/api/admin/vip/show', { method: 'POST' });
+          setAdminStatus(r.uuid ? `VIP: ${r.uuid} (лимит ${r.limit})` : 'VIP не создан');
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
+      });
+      document.getElementById('adminVipInc').addEventListener('click', async () => {
+        try {
+          const r = await adminFetch('/api/admin/vip/inc', { method: 'POST' });
+          setAdminStatus(`VIP лимит: ${r.limit}`);
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
+      });
+      document.getElementById('adminVipDec').addEventListener('click', async () => {
+        try {
+          const r = await adminFetch('/api/admin/vip/dec', { method: 'POST' });
+          setAdminStatus(`VIP лимит: ${r.limit}`);
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
+      });
+      document.getElementById('adminVipRotate').addEventListener('click', async () => {
+        try {
+          const r = await adminFetch('/api/admin/vip/rotate', { method: 'POST' });
+          setAdminStatus(`VIP обновлен: ${r.uuid || '-'}`);
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
+      });
+      document.getElementById('adminVipDelete').addEventListener('click', async () => {
+        try {
+          await adminFetch('/api/admin/vip/delete', { method: 'POST' });
+          setAdminStatus('VIP удален');
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
+      });
+      document.getElementById('adminBackup').addEventListener('click', async () => {
+        try {
+          const resp = await fetch(API_BASE + '/api/admin/backup', {
+            headers: { 'X-Telegram-InitData': INIT_DATA }
+          });
+          if (!resp.ok) throw new Error('backup_error');
+          const blob = await resp.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'ghostlink-backup.db';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          setAdminStatus('Бэкап скачан');
+        } catch (e) {
+          setAdminStatus('Ошибка');
+        }
+      });
 
       loadUser();
     </script>
