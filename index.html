@@ -68,7 +68,7 @@
         <div class="text-muted-gray">Вход только по приглашению.</div>
       </div>
     </section>
-    <header class="pt-2 mb-6 flex items-center gap-3">
+    <header id="appHeader" class="pt-2 mb-6 flex items-center gap-3">
       <img
         src="ghost_ava.png"
         alt="GhostLink"
@@ -273,11 +273,14 @@
       let accessClosed = false;
 
       function showScreen(id) {
-        if (accessClosed && USER_ID !== ADMIN_ID) id = 'screen-locked';
+        const header = document.getElementById('appHeader');
+        const locked = accessClosed && USER_ID !== ADMIN_ID;
+        if (locked) id = 'screen-locked';
         screens.forEach(s => s.classList.remove('active'));
         const el = document.getElementById(id);
         if (el) el.classList.add('active');
         backBtn.classList.toggle('hidden', stack.length <= 1);
+        if (header) header.classList.toggle('hidden', locked);
       }
 
       function pushScreen(id) {
