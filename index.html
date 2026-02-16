@@ -238,6 +238,12 @@
         </div>
 
         <div class="border border-primary rounded-2xl p-4 mb-4">
+          <div class="text-white font-bold mb-2">Клиенты (как в панели)</div>
+          <button id="adminClientsRefresh" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Обновить список</button>
+          <div id="adminClients" class="mt-3 text-sm text-muted-gray">Список пуст</div>
+        </div>
+
+        <div class="border border-primary rounded-2xl p-4 mb-4">
           <div class="text-white font-bold mb-2">VIP</div>
           <div class="flex gap-2">
             <button id="adminVipShow" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Показать</button>
@@ -578,6 +584,87 @@
           setAdminStatus('Ошибка');
         }
       });
+
+      function formatBytes(val) {
+        const v = Number(val || 0);
+        if (v < 1024) return v + ' B';
+        const kb = v / 1024;
+        if (kb < 1024) return kb.toFixed(1) + ' KB';
+        const mb = kb / 1024;
+        if (mb < 1024) return mb.toFixed(1) + ' MB';
+        const gb = mb / 1024;
+        return gb.toFixed(2) + ' GB';
+      }
+
+      async function loadAdminClients() {
+        const box = document.getElementById('adminClients');
+        box.textContent = 'Загрузка...';
+        try {
+          const data = await adminFetch('/api/admin/clients');
+          if (!data.items || data.items.length === 0) {
+            box.textContent = 'Список пуст';
+            return;
+          }
+          box.innerHTML = '';
+          data.items.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between gap-2 py-2 border-b border-white/10';
+            const left = document.createElement('div');
+            left.className = 'flex flex-col';
+            const name = document.createElement('div');
+            name.className = 'text-white';
+            name.textContent = item.email || item.uuid;
+            const meta = document.createElement('div');
+            meta.className = 'text-muted-gray text-xs';
+            meta.textContent = `${item.online ? 'Онлайн' : 'Офлайн'} · ${formatBytes(item.total || 0)}`;
+            left.appendChild(name);
+            left.appendChild(meta);
+
+            const right = document.createElement('div');
+            right.className = 'flex gap-2';
+            const toggle = document.createElement('button');
+            toggle.className = 'ios-active border border-primary text-primary font-bold px-2 py-1 rounded-lg text-xs';
+            toggle.textContent = item.enable ? 'Откл' : 'Вкл';
+            toggle.addEventListener('click', async () => {
+              try {
+                await adminFetch('/api/admin/client/enable', {
+                  method: 'POST',
+                  body: JSON.stringify({ uuid: item.uuid, enable: !item.enable })
+                });
+                setAdminStatus('Сохранено');
+                loadAdminClients();
+              } catch (e) {
+                setAdminStatus('Ошибка');
+              }
+            });
+            const del = document.createElement('button');
+            del.className = 'ios-active border border-primary text-primary font-bold px-2 py-1 rounded-lg text-xs';
+            del.textContent = 'Удалить';
+            del.addEventListener('click', async () => {
+              try {
+                await adminFetch('/api/admin/client/delete', {
+                  method: 'POST',
+                  body: JSON.stringify({ uuid: item.uuid })
+                });
+                setAdminStatus('Удалено');
+                loadAdminClients();
+              } catch (e) {
+                setAdminStatus('Ошибка');
+              }
+            });
+            right.appendChild(toggle);
+            right.appendChild(del);
+
+            row.appendChild(left);
+            row.appendChild(right);
+            box.appendChild(row);
+          });
+        } catch (e) {
+          box.textContent = 'Ошибка загрузки';
+        }
+      }
+
+      document.getElementById('adminClientsRefresh').addEventListener('click', loadAdminClients);
 
       loadUser();
     </script>
