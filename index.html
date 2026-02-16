@@ -275,7 +275,8 @@
       if (tg) tg.ready();
 
       const params = new URLSearchParams(window.location.search);
-      const API_BASE = params.get('api') || '';
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const API_BASE = params.get('api') || hashParams.get('api') || '';
       const INIT_DATA = tg ? tg.initData : '';
       const OS = tg && tg.platform ? tg.platform : '';
 
