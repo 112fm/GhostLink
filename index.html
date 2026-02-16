@@ -274,9 +274,7 @@
       const tg = window.Telegram ? Telegram.WebApp : null;
       if (tg) tg.ready();
 
-      const params = new URLSearchParams(window.location.search);
-      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-      const API_BASE = params.get('api') || hashParams.get('api') || '';
+      const API_BASE = "https://api.112prd.ru:2053";
       const INIT_DATA = tg ? tg.initData : '';
       const OS = tg && tg.platform ? tg.platform : '';
 
