@@ -280,10 +280,10 @@
       const OS = tg && tg.platform ? tg.platform : '';
 
       const LINKS = {
-        ios: 'https://apps.apple.com/us/app/v2raytun/id6474143415',
+        ios: 'https://apps.apple.com/us/app/v2raytun/id6476628951?l=ru',
         android: 'https://play.google.com/store/apps/details?id=com.v2raytun.android',
         windows: 'https://github.com/mdf45/v2raytun/releases/download/v3.7.10/v2RayTun_Setup.exe',
-        mac: 'https://apps.apple.com/us/app/v2raytun/id6474143415'
+        mac: 'https://apps.apple.com/us/app/v2raytun/id6476628951?l=ru'
       };
 
       function apiFetch(path, options = {}) {
@@ -295,7 +295,15 @@
             'X-Telegram-InitData': INIT_DATA,
             ...(options.headers || {})
           }
-        }).then(r => r.json());
+        }).then(async (r) => {
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok) {
+            const err = new Error(data.detail || 'api_error');
+            err.data = data;
+            throw err;
+          }
+          return data;
+        });
       }
 
       function setSubStatus(active) {
@@ -338,8 +346,9 @@
       function loadKey() {
         apiFetch('/api/key', { method: 'POST' }).then(data => {
           document.getElementById('keyValue').textContent = data.key || 'нет ключа';
-        }).catch(() => {
-          document.getElementById('keyValue').textContent = 'Не удалось получить ключ';
+        }).catch((err) => {
+          const msg = err && err.message ? err.message : 'Не удалось получить ключ';
+          document.getElementById('keyValue').textContent = `Не удалось получить ключ: ${msg}`;
         });
       }
 
@@ -433,6 +442,9 @@
         });
       });
 
+      if (!INIT_DATA) {
+        document.getElementById('keyValue').textContent = 'Открой через Telegram';
+      }
       loadUser();
     </script>
   </body>
