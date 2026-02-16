@@ -302,7 +302,23 @@
       const API_BASE = "https://api.112prd.ru:2053";
       const INIT_DATA = tg ? tg.initData : '';
       const ADMIN_ID = 312826672;
-      const USER_ID = tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 0;
+      function extractUserId() {
+        try {
+          if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
+            return Number(tg.initDataUnsafe.user.id);
+          }
+          if (INIT_DATA) {
+            const p = new URLSearchParams(INIT_DATA);
+            const u = p.get('user');
+            if (u) {
+              const obj = JSON.parse(u);
+              if (obj && obj.id) return Number(obj.id);
+            }
+          }
+        } catch (e) {}
+        return 0;
+      }
+      const USER_ID = extractUserId();
 
       function apiFetch(path, options = {}) {
         if (!API_BASE) return Promise.reject(new Error('no_api'));
