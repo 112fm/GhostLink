@@ -86,13 +86,23 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       }
 
       let supportUrl = '';
+      let adminUsersById = {};
+
+      function formatSubLine(sub) {
+        if (!sub || !sub.active) return 'нет подписки';
+        if (!sub.expiry) return 'Без срока';
+        const human = sub.expiry_human || sub.expiry;
+        const days = Number(sub.days_left);
+        if (Number.isFinite(days)) return `${human} · ${days} дн`;
+        return human;
+      }
 
       function loadUser() {
         if (!API_BASE || !INIT_DATA) return;
         apiFetch('/api/user')
           .then(data => {
             document.getElementById('balanceValue').textContent = (data.balance || 0) + '₽';
-            document.getElementById('expiryValue').textContent = data.subscription.expiry || 'нет подписки';
+            document.getElementById('expiryValue').textContent = formatSubLine(data.subscription);
             setSubStatus(data.subscription.active);
             document.getElementById('profileName').textContent = data.user.name || 'Пользователь';
             document.getElementById('profileId').textContent = 'ID: ' + data.user.id;
@@ -447,6 +457,40 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         }
       });
       document.getElementById('adminUsersRefresh').addEventListener('click', loadAdminUsers);
+      document.getElementById('adminUserId').addEventListener('change', () => {
+        const userId = document.getElementById('adminUserId').value.trim();
+        const meta = document.getElementById('adminUserMeta');
+        const openBtn = document.getElementById('adminOpenTg');
+        if (!userId || !adminUsersById[userId]) {
+          meta.textContent = 'Выбери пользователя, чтобы увидеть детали подписки.';
+          openBtn.disabled = true;
+          return;
+        }
+        const u = adminUsersById[userId];
+        const expiry = u.expiry_human || (u.expiry ? u.expiry : 'Без срока/нет');
+        const days = Number(u.days_left);
+        const daysText = Number.isFinite(days) ? `${days} дн` : '—';
+        meta.innerHTML =
+          `Статус: ${u.status || 'none'}<br>` +
+          `Подписка до: ${expiry}<br>` +
+          `Осталось: ${daysText}<br>` +
+          `Тариф: ${u.tariff_name || '—'} · Устройства: ${u.device_limit || 0}<br>` +
+          `Трафик: ${u.traffic_limit_gb || 0} GB/мес`;
+        openBtn.disabled = !(u.tg_link || u.tg_username);
+      });
+
+      document.getElementById('adminOpenTg').addEventListener('click', () => {
+        const userId = document.getElementById('adminUserId').value.trim();
+        const u = adminUsersById[userId];
+        if (!u) return notify('Выбери пользователя');
+        const link = u.tg_link || '';
+        if (!link) return notify('У пользователя нет username в Telegram');
+        if (tg && tg.openTelegramLink) {
+          try { tg.openTelegramLink(link); } catch (e) { window.open(link, '_blank'); }
+        } else {
+          window.open(link, '_blank');
+        }
+      });
 
       document.getElementById('adminClientCreate').addEventListener('click', async () => {
         const email = document.getElementById('adminClientEmail').value.trim();
@@ -514,7 +558,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
             left.className = 'flex flex-col';
             const name = document.createElement('div');
             name.className = 'text-white';
-            name.textContent = item.email || item.uuid;
+            name.textContent = item.display_name || item.email || item.uuid;
             const meta = document.createElement('div');
             meta.className = 'text-muted-gray text-xs';
             meta.textContent = `${item.online ? 'Онлайн' : 'Офлайн'} · ${formatBytes(item.total || 0)}`;
@@ -572,15 +616,22 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         if (!sel) return;
         try {
           const data = await adminFetch('/api/admin/users');
+          adminUsersById = {};
           sel.innerHTML = '<option value="">Выбери пользователя</option>';
           (data.items || []).forEach(u => {
+            adminUsersById[u.id] = u;
             const opt = document.createElement('option');
             opt.value = u.id;
             const label = (u.display_name || u.name || u.id).trim();
             const withId = label === u.id || label === `ID ${u.id}` ? label : `${label} (${u.id})`;
-            opt.textContent = `${withId} [${u.status}]`;
+            const d = Number(u.days_left);
+            const subText = u.expiry_human ? ` до ${u.expiry_human}` : '';
+            const leftText = Number.isFinite(d) ? ` · ${d}д` : '';
+            opt.textContent = `${withId} [${u.status}]${subText}${leftText}`;
             sel.appendChild(opt);
           });
+          document.getElementById('adminUserMeta').textContent = 'Выбери пользователя, чтобы увидеть детали подписки.';
+          document.getElementById('adminOpenTg').disabled = true;
           notify('Список пользователей обновлен');
         } catch (e) {
           notify('Ошибка загрузки пользователей');
