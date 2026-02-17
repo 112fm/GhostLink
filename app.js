@@ -87,6 +87,47 @@ const screens = Array.from(document.querySelectorAll('.screen'));
 
       let supportUrl = '';
       let adminUsersById = {};
+      let tariffMap = { 1: { price: 150, min_pay: 100 }, 2: { price: 225, min_pay: 150 }, 3: { price: 300, min_pay: 200 }, 4: { price: 375, min_pay: 250 }, 5: { price: 450, min_pay: 300 } };
+      let currentTier = 'regular';
+
+      function formatTierLabel(tier) {
+        const v = String(tier || '').toLowerCase();
+        if (v === 'own') return 'свой';
+        if (v === 'vip') return 'vip';
+        return 'обычный';
+      }
+
+      function renderTariffs() {
+        const solo = tariffMap[1] || { price: 150, min_pay: 100 };
+        const flexSlider = document.getElementById('flexSlider');
+        const devices = Math.max(2, Math.min(5, parseInt(flexSlider.value || '2', 10)));
+        const flex = tariffMap[devices] || { price: 225, min_pay: 150 };
+
+        document.getElementById('tierBadge').textContent = formatTierLabel(currentTier);
+        document.getElementById('soloPrice').textContent = `${solo.price}`;
+        document.getElementById('soloMinPay').textContent = `${solo.min_pay}`;
+        document.getElementById('flexPrice').textContent = `${devices} устройства — ${flex.price} ₽`;
+        document.getElementById('flexMinPay').textContent = `${flex.min_pay}`;
+      }
+
+      async function loadTariffs() {
+        try {
+          const data = await apiFetch('/api/tariffs');
+          const prices = data && data.prices ? data.prices : {};
+          const next = {};
+          for (let d = 1; d <= 5; d += 1) {
+            const item = prices[d] || prices[String(d)];
+            if (item && Number.isFinite(Number(item.price)) && Number.isFinite(Number(item.min_pay))) {
+              next[d] = { price: Number(item.price), min_pay: Number(item.min_pay) };
+            }
+          }
+          if (Object.keys(next).length >= 5) tariffMap = next;
+          currentTier = String(data && data.tier ? data.tier : currentTier);
+          renderTariffs();
+        } catch (e) {
+          renderTariffs();
+        }
+      }
 
       function formatSubLine(sub) {
         if (!sub || !sub.active) return 'нет подписки';
@@ -107,6 +148,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
             document.getElementById('profileName').textContent = data.user.name || 'Пользователь';
             document.getElementById('profileId').textContent = 'ID: ' + data.user.id;
             document.getElementById('deviceLimit').textContent = data.device_limit || 3;
+            currentTier = data.member_tier || currentTier;
             const dc = document.getElementById('deviceCount');
             if (dc) dc.textContent = '—';
             document.getElementById('refLink').textContent = data.referral_link || 'нет ссылки';
@@ -114,6 +156,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
             supportUrl = data.support_link || 'https://t.me/ghostlink112_bot';
             const supportLink = document.getElementById('supportLink');
             supportLink.href = supportUrl;
+            renderTariffs();
           })
           .catch((err) => {
             if (err && (err.status === 401 || err.status === 403)) {
@@ -133,6 +176,13 @@ const screens = Array.from(document.querySelectorAll('.screen'));
           el.classList.remove('show');
           setTimeout(() => el.remove(), 180);
         }, 1800);
+      }
+
+      function confirmDanger(code, title) {
+        const ok1 = window.confirm(`Опасное действие: ${title}.\nПродолжить?`);
+        if (!ok1) return false;
+        const typed = window.prompt(`Введи ${code} для подтверждения:`) || '';
+        return typed.trim().toUpperCase() === code;
       }
 
       function adminFetch(path, options = {}) {
@@ -271,6 +321,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       });
 
       document.getElementById('resetDeviceBtn').addEventListener('click', () => {
+        if (!confirmDanger('RESET', 'Сброс ключа устройства')) return;
         apiFetch('/api/device/reset', { method: 'POST' })
           .then((res) => {
             if (res.key) {
@@ -284,14 +335,40 @@ const screens = Array.from(document.querySelectorAll('.screen'));
           .catch(() => notify('Не удалось сбросить ключ'));
       });
 
-      document.getElementById('soloPay').addEventListener('click', () => notify('Оплата будет подключена позже.'));
-      document.getElementById('flexPay').addEventListener('click', () => notify('Оплата будет подключена позже.'));
-
-      const flexPrices = { 2: 225, 3: 300, 4: 375, 5: 450 };
       const flexSlider = document.getElementById('flexSlider');
       flexSlider.addEventListener('input', () => {
-        const v = parseInt(flexSlider.value, 10);
-        document.getElementById('flexPrice').textContent = `${v} устройства — ${flexPrices[v]} ₽`;
+        renderTariffs();
+      });
+
+      document.getElementById('soloPay').addEventListener('click', async () => {
+        try {
+          const res = await apiFetch('/api/subscribe', {
+            method: 'POST',
+            body: JSON.stringify({ tariff_id: 'solo', devices: 1 })
+          });
+          notify(`Solo активирован до ${res.expiry || 'даты в профиле'}`);
+          loadUser();
+          loadDevices();
+          loadTariffs();
+        } catch (e) {
+          notify(`Ошибка: ${e.message || 'subscribe'}`);
+        }
+      });
+
+      document.getElementById('flexPay').addEventListener('click', async () => {
+        const devices = Math.max(2, Math.min(5, parseInt(flexSlider.value || '2', 10)));
+        try {
+          const res = await apiFetch('/api/subscribe', {
+            method: 'POST',
+            body: JSON.stringify({ tariff_id: 'flex', devices })
+          });
+          notify(`Flex (${devices}) активирован до ${res.expiry || 'даты в профиле'}`);
+          loadUser();
+          loadDevices();
+          loadTariffs();
+        } catch (e) {
+          notify(`Ошибка: ${e.message || 'subscribe'}`);
+        }
       });
 
       if (USER_ID === ADMIN_ID) {
@@ -334,6 +411,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         }
       });
       document.getElementById('adminRestart').addEventListener('click', async () => {
+        if (!confirmDanger('RESTART', 'Перезапуск Xray')) return;
         try {
           await adminFetch('/api/admin/xray/restart', { method: 'POST' });
           notify('Xray перезапущен');
@@ -344,9 +422,10 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       document.getElementById('adminLock').addEventListener('click', async () => {
         try {
           const r = await adminFetch('/api/admin/panel/lock', { method: 'POST' });
+          if (!r.ok) throw new Error(r.message || 'panel_lock_failed');
           notify(r.message || 'Панель закрыта');
         } catch (e) {
-          notify('Ошибка');
+          notify(`Ошибка: ${e.message || 'panel_lock'}`);
         }
       });
       document.getElementById('adminUnlock').addEventListener('click', async () => {
@@ -354,9 +433,10 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         if (!ip) return notify('Укажи IP');
         try {
           const r = await adminFetch('/api/admin/panel/unlock', { method: 'POST', body: JSON.stringify({ ip }) });
+          if (!r.ok) throw new Error(r.message || 'panel_unlock_failed');
           notify(r.message || 'Панель открыта');
         } catch (e) {
-          notify('Ошибка');
+          notify(`Ошибка: ${e.message || 'panel_unlock'}`);
         }
       });
       document.getElementById('adminIpShow').addEventListener('click', async () => {
@@ -401,6 +481,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       document.getElementById('adminDelete').addEventListener('click', async () => {
         const userId = document.getElementById('adminUserId').value.trim();
         if (!userId) return notify('Укажи Telegram ID');
+        if (!confirmDanger('DELETE', `Удаление пользователя ${userId}`)) return;
         try {
           await adminFetch('/api/admin/user/delete', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
           notify('Пользователь удален');
@@ -448,6 +529,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       document.getElementById('adminResetSub').addEventListener('click', async () => {
         const userId = document.getElementById('adminUserId').value.trim();
         if (!userId) return notify('Выбери пользователя');
+        if (!confirmDanger('RESET', `Сброс подписки пользователя ${userId}`)) return;
         try {
           await adminFetch('/api/admin/user/reset_subscription', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
           notify('Подписка сброшена');
@@ -470,11 +552,16 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         const expiry = u.expiry_human || (u.expiry ? u.expiry : 'Без срока/нет');
         const days = Number(u.days_left);
         const daysText = Number.isFinite(days) ? `${days} дн` : '—';
+        const connected = Number(u.connected_devices || 0);
+        const limit = Number(u.device_limit || 0);
+        const ratio = `${connected}/${limit}`;
+        const tierText = formatTierLabel(u.member_tier || 'regular');
         meta.innerHTML =
           `Статус: ${u.status || 'none'}<br>` +
           `Подписка до: ${expiry}<br>` +
           `Осталось: ${daysText}<br>` +
-          `Тариф: ${u.tariff_name || '—'} · Устройства: ${u.device_limit || 0}<br>` +
+          `Тариф: ${u.tariff_name || '—'} · Устройства: ${ratio}<br>` +
+          `Категория: ${tierText}<br>` +
           `Трафик: ${u.traffic_limit_gb || 0} GB/мес`;
         openBtn.disabled = !(u.tg_link || u.tg_username);
       });
@@ -582,23 +669,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
                 notify('Ошибка');
               }
             });
-            const del = document.createElement('button');
-            del.className = 'ios-active border border-primary text-primary font-bold px-2 py-1 rounded-lg text-xs';
-            del.textContent = 'Удалить';
-            del.addEventListener('click', async () => {
-              try {
-                await adminFetch('/api/admin/client/delete', {
-                  method: 'POST',
-                  body: JSON.stringify({ uuid: item.uuid })
-                });
-                notify('Удалено');
-                loadAdminClients();
-              } catch (e) {
-                notify('Ошибка');
-              }
-            });
             right.appendChild(toggle);
-            right.appendChild(del);
 
             row.appendChild(left);
             row.appendChild(right);
@@ -610,6 +681,40 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       }
 
       document.getElementById('adminClientsRefresh').addEventListener('click', loadAdminClients);
+      document.getElementById('adminSetOwn').addEventListener('click', async () => {
+        const userId = document.getElementById('adminUserId').value.trim();
+        if (!userId) return notify('Выбери пользователя');
+        try {
+          await adminFetch('/api/admin/user/tier', { method: 'POST', body: JSON.stringify({ user_id: userId, tier: 'own' }) });
+          notify('Категория: СВОЙ');
+          await loadAdminUsers();
+          document.getElementById('adminUserId').value = userId;
+          document.getElementById('adminUserId').dispatchEvent(new Event('change'));
+          if (String(userId) === String(USER_ID)) {
+            loadTariffs();
+            loadUser();
+          }
+        } catch (e) {
+          notify(`Ошибка: ${e.message || 'set_own'}`);
+        }
+      });
+      document.getElementById('adminSetRegular').addEventListener('click', async () => {
+        const userId = document.getElementById('adminUserId').value.trim();
+        if (!userId) return notify('Выбери пользователя');
+        try {
+          await adminFetch('/api/admin/user/tier', { method: 'POST', body: JSON.stringify({ user_id: userId, tier: 'regular' }) });
+          notify('Категория: Обычный');
+          await loadAdminUsers();
+          document.getElementById('adminUserId').value = userId;
+          document.getElementById('adminUserId').dispatchEvent(new Event('change'));
+          if (String(userId) === String(USER_ID)) {
+            loadTariffs();
+            loadUser();
+          }
+        } catch (e) {
+          notify(`Ошибка: ${e.message || 'set_regular'}`);
+        }
+      });
 
       async function loadAdminUsers() {
         const sel = document.getElementById('adminUserId');
@@ -627,7 +732,12 @@ const screens = Array.from(document.querySelectorAll('.screen'));
             const d = Number(u.days_left);
             const subText = u.expiry_human ? ` до ${u.expiry_human}` : '';
             const leftText = Number.isFinite(d) ? ` · ${d}д` : '';
-            opt.textContent = `${withId} [${u.status}]${subText}${leftText}`;
+            const ratioText = ` · ${u.connected_devices || 0}/${u.device_limit || 0}`;
+            let tierTag = '[ОБЫЧНЫЙ]';
+            const tier = String(u.member_tier || 'regular').toLowerCase();
+            if (tier === 'own') tierTag = '[СВОЙ]';
+            if (tier === 'vip') tierTag = '[VIP]';
+            opt.textContent = `${withId} ${tierTag} [${u.status}]${subText}${leftText}${ratioText}`;
             sel.appendChild(opt);
           });
           document.getElementById('adminUserMeta').textContent = 'Выбери пользователя, чтобы увидеть детали подписки.';
@@ -639,3 +749,4 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       }
 
       loadUser();
+      loadTariffs();
